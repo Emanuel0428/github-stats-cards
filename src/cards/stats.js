@@ -124,29 +124,64 @@ export async function getStatsCard(username) {
       <path class="corner-accent" d="M 505,265 L 485,265 M 505,265 L 505,245"/>
 
       <!-- Title section -->
-      <text class="title" x="30" y="45">GIT STATS</text>
+      <text class="title" x="30" y="45">${username} GIT STATS</text>
       <path class="accent-line" d="M 30,55 L 200,55"/>
 
       <!-- Stats grid -->
-      <circle class="data-dot" cx="35" cy="80" r="2"/>
-      <text class="stat-label" x="45" y="83">STARS</text>
-      <text class="stat-value" x="45" y="110">${stats.stars}</text>
+      <text class="stat-label" x="35" y="83">STARS</text>
+      <text class="stat-value" x="35" y="110">${stats.stars}</text>
+      <!-- Star icon -->
+      <g transform="translate(120, 95)">
+        <path d="M8 0.5L10.163 5.528L15.609 6.298L11.804 10.014L12.708 15.439L8 13.139L3.292 15.439L4.196 10.014L0.391 6.298L5.837 5.528L8 0.5Z" 
+              fill="#00f5ff" opacity="0.6" filter="url(#glow)" transform="scale(0.9)"/>
+      </g>
 
-      <circle class="data-dot" cx="35" cy="145" r="2"/>
-      <text class="stat-label" x="45" y="148">COMMITS</text>
-      <text class="stat-value" x="45" y="175">${stats.commits}</text>
+      <text class="stat-label" x="35" y="148">COMMITS</text>
+      <text class="stat-value" x="35" y="175">${stats.commits}</text>
+      <!-- Commit icon -->
+      <g transform="translate(120, 160)">
+        <circle cx="8" cy="8" r="3" fill="none" stroke="#00f5ff" stroke-width="1.5" opacity="0.6" filter="url(#glow)"/>
+        <path d="M8 0 L8 5 M8 11 L8 16 M0 8 L5 8 M11 8 L16 8" 
+              stroke="#00f5ff" stroke-width="1.5" opacity="0.6" filter="url(#glow)" transform="scale(0.7) translate(3.5, 3.5)"/>
+      </g>
 
-      <circle class="data-dot" cx="35" cy="210" r="2"/>
-      <text class="stat-label" x="45" y="213">PULL REQ</text>
-      <text class="stat-value" x="45" y="240">${stats.prs}</text>
+      <text class="stat-label" x="35" y="213">PULL REQ</text>
+      <text class="stat-value" x="35" y="240">${stats.prs}</text>
+      <!-- PR icon -->
+      <g transform="translate(120, 225)">
+        <path d="M3 3 L3 13 M13 3 L13 8 M13 8 Q13 10 11 10 L8 10 M3 1 A2 2 0 1 1 3 5 A2 2 0 1 1 3 1 M3 11 A2 2 0 1 1 3 15 A2 2 0 1 1 3 11 M13 1 A2 2 0 1 1 13 5 A2 2 0 1 1 13 1" 
+              fill="none" stroke="#00f5ff" stroke-width="1.5" opacity="0.6" filter="url(#glow)" transform="scale(0.9)"/>
+      </g>
 
-      <circle class="data-dot" cx="250" cy="80" r="2"/>
-      <text class="stat-label" x="260" y="83">ISSUES</text>
-      <text class="stat-value" x="260" y="110">${stats.issues}</text>
+      <text class="stat-label" x="250" y="83">ISSUES</text>
+      <text class="stat-value" x="250" y="110">${stats.issues}</text>
+      <!-- Issue icon -->
+      <g transform="translate(320, 95)">
+        <circle cx="8" cy="8" r="7" fill="none" stroke="#00f5ff" stroke-width="1.5" opacity="0.6" filter="url(#glow)" transform="scale(0.9)"/>
+        <circle cx="8" cy="11" r="1" fill="#00f5ff" opacity="0.6" transform="scale(0.9)"/>
+        <path d="M8 4 L8 9" stroke="#00f5ff" stroke-width="1.5" opacity="0.6" filter="url(#glow)" transform="scale(0.9)"/>
+      </g>
 
-      <circle class="data-dot" cx="250" cy="145" r="2"/>
-      <text class="stat-label" x="260" y="148">CONTRIB</text>
-      <text class="stat-value" x="260" y="175">${stats.contributedTo}</text>
+      <text class="stat-label" x="250" y="148">CONTRIB</text>
+      <text class="stat-value" x="250" y="175">${stats.contributedTo}</text>
+      <!-- Contrib icon -->
+      <g transform="translate(320, 160)">
+        <rect x="1" y="5" width="2" height="2" fill="#00f5ff" opacity="0.3"/>
+        <rect x="4" y="5" width="2" height="2" fill="#00f5ff" opacity="0.5"/>
+        <rect x="7" y="5" width="2" height="2" fill="#00f5ff" opacity="0.8"/>
+        <rect x="10" y="5" width="2" height="2" fill="#00f5ff" opacity="0.6"/>
+        <rect x="13" y="5" width="2" height="2" fill="#00f5ff" opacity="0.4"/>
+        <rect x="1" y="8" width="2" height="2" fill="#00f5ff" opacity="0.5"/>
+        <rect x="4" y="8" width="2" height="2" fill="#00f5ff" opacity="0.8" filter="url(#glow)"/>
+        <rect x="7" y="8" width="2" height="2" fill="#00f5ff" opacity="0.6"/>
+        <rect x="10" y="8" width="2" height="2" fill="#00f5ff" opacity="0.8"/>
+        <rect x="13" y="8" width="2" height="2" fill="#00f5ff" opacity="0.3"/>
+        <rect x="1" y="11" width="2" height="2" fill="#00f5ff" opacity="0.4"/>
+        <rect x="4" y="11" width="2" height="2" fill="#00f5ff" opacity="0.6"/>
+        <rect x="7" y="11" width="2" height="2" fill="#00f5ff" opacity="0.5"/>
+        <rect x="10" y="11" width="2" height="2" fill="#00f5ff" opacity="0.7"/>
+        <rect x="13" y="11" width="2" height="2" fill="#00f5ff" opacity="0.5"/>
+      </g>
 
       <!-- Rank blob -->
       <ellipse class="rank-blob" cx="420" cy="150" rx="70" ry="85" transform="rotate(-15 420 150)"/>

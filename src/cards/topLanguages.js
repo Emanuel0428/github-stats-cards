@@ -20,6 +20,9 @@ const languageColors = {
 
 export async function getTopLanguagesCard(username) {
   const languages = await getTopLanguages(username);
+  
+  // Limitar a máximo 8 lenguajes
+  const limitedLanguages = languages.slice(0, 7);
 
   const width = 520;
   const height = 340;
@@ -27,8 +30,8 @@ export async function getTopLanguagesCard(username) {
   let yOffset = 85;
   let barsHTML = '';
 
-  languages.forEach((lang, index) => {
-    const percentage = (lang.count / languages[0].count) * 100;
+  limitedLanguages.forEach((lang, index) => {
+    const percentage = (lang.count / limitedLanguages[0].count) * 100;
     const barWidth = (percentage / 100) * 240;
     const color = languageColors[lang.language] || '#00f5ff';
     const y = yOffset + index * 35;
