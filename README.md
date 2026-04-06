@@ -1,119 +1,136 @@
-# 🚀 GitHub Stats Cards
+# GitHub Stats Cards
 
-Generador de tarjetas SVG dinámicas con estadísticas de GitHub. Diseño futurista con efectos de neón y gradientes.
+A custom GitHub statistics card generator with a cyberpunk-inspired design. This project was born from the idea of creating GitHub stats visualizations with my own style, while keeping it freely available for the community to use and contribute to.
 
-## ✨ Características
+Currently in active development and continuous evolution.
 
-- 📊 Tarjeta de estadísticas (stars, commits, PRs, issues, contribuciones)
-- 🔤 Tarjeta de lenguajes más usados con barras animadas
-- 🎨 Diseño cyberpunk con efectos de glow y gradientes
-- ⚡ Generación dinámica en tiempo real
-- 🔄 Cache automático de 1 hora
-- 📱 Responsive y listo para usar en README
+## About
 
-## 🖼️ Preview
+This project generates dynamic SVG cards displaying GitHub statistics with a distinctive futuristic aesthetic. It features neon effects, gradients, and a clean layout that stands out from traditional stat cards.
+
+## Features
+
+- Real-time GitHub statistics (stars, commits, pull requests, issues, contributions)
+- Top programming languages visualization with proportional bars
+- Cyberpunk-inspired design with glow effects
+- Automatic caching for optimal performance
+- Easy integration into any README or documentation
+- Fully customizable through code
+
+## Usage
+
+### Stats Card
+```markdown
+![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME)
+```
+
+### Top Languages Card
+```markdown
+![Top Languages](https://github-stats-cards-six.vercel.app/top-languages?username=YOUR_USERNAME)
+```
+
+Replace `YOUR_USERNAME` with your GitHub username.
+
+## Example
 
 ```markdown
-![GitHub Stats](https://tu-dominio.vercel.app/stats?username=tu_usuario)
-![Top Languages](https://tu-dominio.vercel.app/top-languages?username=tu_usuario)
+![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=Emanuel0428)
+![Top Languages](https://github-stats-cards-six.vercel.app/top-languages?username=Emanuel0428)
 ```
 
-## 🛠️ Instalación Local
+## Local Development
 
-1. Clona el repositorio:
+1. Clone the repository:
 ```bash
-git clone https://github.com/tu-usuario/github-stats-personal.git
-cd github-stats-personal
+git clone https://github.com/Emanuel0428/github-stats-cards.git
+cd github-stats-cards
 ```
 
-2. Instala las dependencias:
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Configura las variables de entorno:
-```bash
-cp .env.example .env
-```
-
-4. Edita `.env` y añade tu token de GitHub:
+3. Create a `.env` file with your GitHub token:
 ```env
-PAT_1=ghp_tu_token_aqui
+PAT_1=your_github_token_here
 PORT=3000
 ```
 
-> 💡 Crea tu token en [GitHub Settings → Developer settings → Personal access tokens](https://github.com/settings/tokens)
+> Create a GitHub Personal Access Token at [GitHub Settings → Developer settings → Personal access tokens](https://github.com/settings/tokens)
 > 
-> Permisos necesarios: `public_repo`, `read:user`
+> Required scopes: `public_repo`, `read:user`
 
-5. Inicia el servidor:
+4. Start the development server:
 ```bash
 npm start
 ```
 
-## 🚀 Deploy en Vercel
+The server will run at `http://localhost:3000`
 
-1. Haz fork del repositorio
-2. Importa el proyecto en [Vercel](https://vercel.com)
-3. Añade la variable de entorno `PAT_1` con tu token de GitHub
-4. Deploy automático ✨
+## Deployment
 
-## 📖 Uso
+This project is optimized for deployment on Vercel:
 
-### Tarjeta de Estadísticas
-```
-https://tu-dominio.vercel.app/stats?username=USUARIO
-```
+1. Fork this repository
+2. Import the project into [Vercel](https://vercel.com)
+3. Add the `PAT_1` environment variable with your GitHub token
+4. Deploy
 
-### Tarjeta de Lenguajes
-```
-https://tu-dominio.vercel.app/top-languages?username=USUARIO
-```
+The configuration is already set up in `vercel.json`.
 
-### En tu README.md
-```markdown
-![GitHub Stats](https://tu-dominio.vercel.app/stats?username=tu_usuario)
-![Top Languages](https://tu-dominio.vercel.app/top-languages?username=tu_usuario)
-```
-
-## 🎨 Personalización
-
-Los colores y estilos se pueden modificar en:
-- `src/cards/stats.js` - Tarjeta de estadísticas
-- `src/cards/topLanguages.js` - Tarjeta de lenguajes
-
-## 🏗️ Estructura del Proyecto
+## Project Structure
 
 ```
 ├── src/
 │   ├── cards/
-│   │   ├── stats.js           # Tarjeta de estadísticas
-│   │   └── topLanguages.js    # Tarjeta de lenguajes
+│   │   ├── stats.js           # Statistics card generator
+│   │   └── topLanguages.js    # Languages card generator
 │   ├── utils/
-│   │   ├── github.js          # API de GitHub
-│   │   └── rank.js            # Sistema de ranking
+│   │   ├── github.js          # GitHub API integration
+│   │   └── rank.js            # Ranking system
 │   ├── public/
-│   │   └── index.html         # Página de inicio
-│   └── server.js              # Servidor Express
-├── .env                       # Variables de entorno
+│   │   └── index.html         # Landing page
+│   └── server.js              # Express server
+├── .env                       # Environment variables
 ├── package.json
-└── vercel.json               # Configuración de Vercel
+└── vercel.json               # Vercel configuration
 ```
 
-## 🤝 Contribuciones
+## Customization
 
-Las contribuciones son bienvenidas. Por favor:
+The visual style can be modified by editing the card files:
+- `src/cards/stats.js` - Statistics card design
+- `src/cards/topLanguages.js` - Languages card design
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+Colors, fonts, and layout are defined in the SVG styles within each file.
 
-## 📝 Licencia
+## Contributing
 
-MIT License - siéntete libre de usar este proyecto para lo que quieras.
+Contributions are welcome and appreciated. Whether it's bug fixes, new features, or design improvements, feel free to:
 
-## 🙏 Créditos
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/YourFeature`)
+3. Commit your changes (`git commit -m 'Add YourFeature'`)
+4. Push to the branch (`git push origin feature/YourFeature`)
+5. Open a Pull Request
 
-Inspirado en [github-readme-stats](https://github.com/anuraghazra/github-readme-stats) con un diseño completamente renovado.
+## Technical Details
+
+- Built with Node.js and Express
+- Uses GitHub REST API for data fetching
+- Generates dynamic SVG graphics
+- Implements intelligent caching (1 hour)
+- Responsive design compatible with all platforms
+
+## License
+
+MIT License - Free to use for any purpose.
+
+## Acknowledgments
+
+Inspired by [github-readme-stats](https://github.com/anuraghazra/github-readme-stats) with a completely redesigned aesthetic approach.
+
+---
+
+**Status:** Active development | Open to contributions | Community-driven
