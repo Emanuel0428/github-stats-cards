@@ -18,8 +18,8 @@ const languageColors = {
   SQL: '#fffb96',
 };
 
-export async function getTopLanguagesVaporwaveCard(username) {
-  const languages = await getTopLanguages(username);
+export async function getTopLanguagesVaporwaveCard(username, preloadedLanguages = null) {
+  const languages = preloadedLanguages || await getTopLanguages(username);
   
   const limitedLanguages = languages.slice(0, 7);
 

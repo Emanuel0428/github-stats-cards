@@ -36,10 +36,10 @@
     body::before {
       content: '';
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: -10%;
+      left: -10%;
+      width: 120%;
+      height: 120%;
       background: 
         radial-gradient(circle at 20% 50%, rgba(123, 47, 247, 0.15) 0%, transparent 50%),
         radial-gradient(circle at 80% 80%, rgba(0, 245, 255, 0.15) 0%, transparent 50%),
@@ -51,8 +51,8 @@
 
     @keyframes bgShift {
       0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(50px, -30px) scale(1.1); }
-      66% { transform: translate(-30px, 50px) scale(0.95); }
+      33% { transform: translate(50px, -30px) scale(1.05); }
+      66% { transform: translate(-30px, 50px) scale(1.02); }
     }
 
     /* Scanline effect */
@@ -587,6 +587,7 @@
     const infoDiv = document.getElementById('info');
     let currentUsername = '';
     let currentTheme = 'cyberpunk';
+    let cachedUserData = null; // Caché de datos del usuario
 
     window.addEventListener('load', () => {
       infoDiv.style.display = 'block';
@@ -599,8 +600,9 @@
     });
 
     themeSelector.addEventListener('change', () => {
-      if (currentUsername) {
-        searchUser();
+      if (currentUsername && cachedUserData) {
+        // Si ya tenemos datos cacheados, solo cambiar el tema sin recargar
+        updateCardsWithTheme();
       }
     });
 
@@ -640,27 +642,25 @@
       });
     }
 
-    function searchUser() {
-      const username = usernameInput.value.trim();
+    async function updateCardsWithTheme() {
       const theme = themeSelector.value;
-
-      if (!username) {
-        showError('⚠️ ERROR: USERNAME REQUIRED');
-        return;
-      }
-
-      currentUsername = username;
       currentTheme = theme;
-      errorContainer.innerHTML = '';
-      infoDiv.style.display = 'none';
+
+      if (!cachedUserData) return;
+
+      // Mostrar loading mientras se regeneran las tarjetas
       cardsContainer.style.display = 'none';
       loadingDiv.style.display = 'block';
 
       const statsCard = document.getElementById('stats-card');
       const languagesCard = document.getElementById('languages-card');
 
-      statsCard.src = `/stats?username=${encodeURIComponent(username)}&theme=${theme}&t=${Date.now()}`;
-      languagesCard.src = `/top-languages?username=${encodeURIComponent(username)}&theme=${theme}&t=${Date.now()}`;
+      // Codificar los datos para pasarlos como parámetro
+      const statsData = encodeURIComponent(JSON.stringify(cachedUserData.stats));
+      const languagesData = encodeURIComponent(JSON.stringify(cachedUserData.languages));
+
+      statsCard.src = `/stats?username=${encodeURIComponent(currentUsername)}&theme=${theme}&data=${statsData}&t=${Date.now()}`;
+      languagesCard.src = `/top-languages?username=${encodeURIComponent(currentUsername)}&theme=${theme}&data=${languagesData}&t=${Date.now()}`;
 
       let loadedCount = 0;
       const onLoad = () => {
@@ -673,20 +673,58 @@
 
       const onError = (event) => {
         console.error('Image load error:', event);
-        console.error('Stats src:', statsCard.src);
-        console.error('Languages src:', languagesCard.src);
         loadingDiv.style.display = 'none';
-        showError('⚠️ ERROR: FAILED TO LOAD DATA // CHECK USERNAME OR GITHUB TOKEN');
+        showError('⚠️ ERROR: FAILED TO LOAD DATA');
       };
 
       statsCard.onload = onLoad;
       languagesCard.onload = onLoad;
       statsCard.onerror = onError;
       languagesCard.onerror = onError;
-      
-      // Debug: log the URLs
-      console.log('Loading stats from:', statsCard.src);
-      console.log('Loading languages from:', languagesCard.src);
+    }
+
+    async function searchUser() {
+      const username = usernameInput.value.trim();
+      const theme = themeSelector.value;
+
+      if (!username) {
+        showError('⚠️ ERROR: USERNAME REQUIRED');
+        return;
+      }
+
+      // Si es el mismo usuario, solo cambiar el tema
+      if (username === currentUsername && cachedUserData) {
+        currentTheme = theme;
+        updateCardsWithTheme();
+        return;
+      }
+
+      currentUsername = username;
+      currentTheme = theme;
+      cachedUserData = null; // Limpiar caché al cambiar de usuario
+      errorContainer.innerHTML = '';
+      infoDiv.style.display = 'none';
+      cardsContainer.style.display = 'none';
+      loadingDiv.style.display = 'block';
+
+      try {
+        // Primero obtener los datos del usuario
+        const response = await fetch(`/api/user-data?username=${encodeURIComponent(username)}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+
+        cachedUserData = await response.json();
+
+        // Ahora cargar las tarjetas con los datos cacheados
+        updateCardsWithTheme();
+
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        loadingDiv.style.display = 'none';
+        showError('⚠️ ERROR: FAILED TO LOAD DATA // CHECK USERNAME OR GITHUB TOKEN');
+      }
     }
   </script>
 </body>

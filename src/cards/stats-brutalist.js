@@ -1,8 +1,8 @@
 import { getUserStats } from '../utils/github.js';
 import { calculateRank } from '../utils/rank.js';
 
-export async function getStatsBrutalistCard(username) {
-  const stats = await getUserStats(username);
+export async function getStatsBrutalistCard(username, preloadedStats = null) {
+  const stats = preloadedStats || await getUserStats(username);
   const rank = calculateRank(stats.stars, stats.commits, stats.prs, stats.issues);
 
   const width = 520;

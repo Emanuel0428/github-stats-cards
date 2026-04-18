@@ -18,8 +18,8 @@ const languageColors = {
   SQL: '#e38c00',
 };
 
-export async function getTopLanguagesLuxuryCard(username) {
-  const languages = await getTopLanguages(username);
+export async function getTopLanguagesLuxuryCard(username, preloadedLanguages = null) {
+  const languages = preloadedLanguages || await getTopLanguages(username);
   
   const limitedLanguages = languages.slice(0, 6);
 
