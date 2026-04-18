@@ -534,6 +534,13 @@
           placeholder="ENTER GITHUB USERNAME..."
           autocomplete="off"
         >
+        <select id="theme-selector" style="padding: 18px 25px; border: none; background: rgba(26, 31, 58, 0.6); color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 16px; outline: none; cursor: pointer; min-width: 180px;">
+          <option value="cyberpunk">CYBERPUNK</option>
+          <option value="brutalist">BRUTALIST</option>
+          <option value="terminal">TERMINAL</option>
+          <option value="luxury">LUXURY</option>
+          <option value="vaporwave">VAPORWAVE</option>
+        </select>
         <button onclick="searchUser()">EXECUTE</button>
       </div>
     </div>
@@ -573,11 +580,13 @@
 
   <script>
     const usernameInput = document.getElementById('username');
+    const themeSelector = document.getElementById('theme-selector');
     const cardsContainer = document.getElementById('cards-container');
     const loadingDiv = document.getElementById('loading');
     const errorContainer = document.getElementById('error-container');
     const infoDiv = document.getElementById('info');
     let currentUsername = '';
+    let currentTheme = 'cyberpunk';
 
     window.addEventListener('load', () => {
       infoDiv.style.display = 'block';
@@ -585,6 +594,12 @@
 
     usernameInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
+        searchUser();
+      }
+    });
+
+    themeSelector.addEventListener('change', () => {
+      if (currentUsername) {
         searchUser();
       }
     });
@@ -605,9 +620,9 @@
       let markdown = '';
 
       if (type === 'stats') {
-        markdown = `![GitHub Stats](${baseUrl}/stats?username=${currentUsername})`;
+        markdown = `![GitHub Stats](${baseUrl}/stats?username=${currentUsername}&theme=${currentTheme})`;
       } else if (type === 'languages') {
-        markdown = `![Top Languages](${baseUrl}/top-languages?username=${currentUsername})`;
+        markdown = `![Top Languages](${baseUrl}/top-languages?username=${currentUsername}&theme=${currentTheme})`;
       }
 
       navigator.clipboard.writeText(markdown).then(() => {
@@ -627,6 +642,7 @@
 
     function searchUser() {
       const username = usernameInput.value.trim();
+      const theme = themeSelector.value;
 
       if (!username) {
         showError('⚠️ ERROR: USERNAME REQUIRED');
@@ -634,6 +650,7 @@
       }
 
       currentUsername = username;
+      currentTheme = theme;
       errorContainer.innerHTML = '';
       infoDiv.style.display = 'none';
       cardsContainer.style.display = 'none';
@@ -642,8 +659,8 @@
       const statsCard = document.getElementById('stats-card');
       const languagesCard = document.getElementById('languages-card');
 
-      statsCard.src = `/stats?username=${encodeURIComponent(username)}&t=${Date.now()}`;
-      languagesCard.src = `/top-languages?username=${encodeURIComponent(username)}&t=${Date.now()}`;
+      statsCard.src = `/stats?username=${encodeURIComponent(username)}&theme=${theme}&t=${Date.now()}`;
+      languagesCard.src = `/top-languages?username=${encodeURIComponent(username)}&theme=${theme}&t=${Date.now()}`;
 
       let loadedCount = 0;
       const onLoad = () => {
@@ -654,15 +671,22 @@
         }
       };
 
-      const onError = () => {
+      const onError = (event) => {
+        console.error('Image load error:', event);
+        console.error('Stats src:', statsCard.src);
+        console.error('Languages src:', languagesCard.src);
         loadingDiv.style.display = 'none';
-        showError('⚠️ ERROR: FAILED TO LOAD DATA // CHECK USERNAME');
+        showError('⚠️ ERROR: FAILED TO LOAD DATA // CHECK USERNAME OR GITHUB TOKEN');
       };
 
       statsCard.onload = onLoad;
       languagesCard.onload = onLoad;
       statsCard.onerror = onError;
       languagesCard.onerror = onError;
+      
+      // Debug: log the URLs
+      console.log('Loading stats from:', statsCard.src);
+      console.log('Loading languages from:', languagesCard.src);
     }
   </script>
 </body>

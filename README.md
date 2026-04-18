@@ -12,31 +12,71 @@ This project generates dynamic SVG cards displaying GitHub statistics with a dis
 
 - Real-time GitHub statistics (stars, commits, pull requests, issues, contributions)
 - Top programming languages visualization with proportional bars
-- Cyberpunk-inspired design with glow effects
+- **5 distinctive visual themes** with unique aesthetics
 - Automatic caching for optimal performance
 - Easy integration into any README or documentation
 - Fully customizable through code
 
+## Available Themes
+
+Choose from 5 completely different visual styles:
+
+### 1. **Cyberpunk** (Default)
+Neon futuristic aesthetic with glow effects and dark backgrounds.
+```markdown
+![Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&theme=cyberpunk)
+```
+
+### 2. **Brutalist**
+Raw minimalism with bold typography and no effects - pure, unfiltered design.
+```markdown
+![Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&theme=brutalist)
+```
+
+### 3. **Terminal**
+Retro terminal aesthetic with green-on-black styling and monospace fonts.
+```markdown
+![Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&theme=terminal)
+```
+
+### 4. **Luxury**
+Refined elegance with gold accents on dark backgrounds.
+```markdown
+![Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&theme=luxury)
+```
+
+### 5. **Vaporwave**
+Retro 80s/90s aesthetic with pastel gradients and grid patterns.
+```markdown
+![Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&theme=vaporwave)
+```
+
 ## Usage
 
-### Stats Card
+### Basic Usage (Default Cyberpunk Theme)
 ```markdown
 ![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME)
-```
-
-### Top Languages Card
-```markdown
 ![Top Languages](https://github-stats-cards-six.vercel.app/top-languages?username=YOUR_USERNAME)
 ```
+
+### With Custom Theme
+```markdown
+![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&theme=brutalist)
+![Top Languages](https://github-stats-cards-six.vercel.app/top-languages?username=YOUR_USERNAME&theme=vaporwave)
+```
+
+**Available themes:** `cyberpunk`, `brutalist`, `terminal`, `luxury`, `vaporwave`
 
 Replace `YOUR_USERNAME` with your GitHub username.
 
 ## Example
 
 ```markdown
-![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=Emanuel0428)
-![Top Languages](https://github-stats-cards-six.vercel.app/top-languages?username=Emanuel0428)
+![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=Emanuel0428&theme=cyberpunk)
+![Top Languages](https://github-stats-cards-six.vercel.app/top-languages?username=Emanuel0428&theme=luxury)
 ```
+
+Mix and match themes for stats and languages cards!
 
 ## Local Development
 
@@ -86,11 +126,14 @@ The configuration is already set up in `vercel.json`.
 │   ├── cards/
 │   │   ├── stats.js           # Statistics card generator
 │   │   └── topLanguages.js    # Languages card generator
+│   ├── themes/
+│   │   ├── themes.js          # Theme definitions
+│   │   └── themeRenderer.js   # Theme rendering utilities
 │   ├── utils/
 │   │   ├── github.js          # GitHub API integration
 │   │   └── rank.js            # Ranking system
 │   ├── public/
-│   │   └── index.html         # Landing page
+│   │   └── index.html         # Interactive demo page
 │   └── server.js              # Express server
 ├── .env                       # Environment variables
 ├── package.json
@@ -99,11 +142,21 @@ The configuration is already set up in `vercel.json`.
 
 ## Customization
 
-The visual style can be modified by editing the card files:
-- `src/cards/stats.js` - Statistics card design
-- `src/cards/topLanguages.js` - Languages card design
+### Creating Custom Themes
 
-Colors, fonts, and layout are defined in the SVG styles within each file.
+The visual style can be customized by editing theme files:
+- `src/themes/themes.js` - Define new themes with colors, fonts, and effects
+- `src/themes/themeRenderer.js` - Customize rendering logic for special effects
+
+Each theme includes:
+- **Fonts**: Custom font families from Google Fonts
+- **Colors**: Background, accent, text colors
+- **Effects**: Glow, noise, borders, and special decorations
+- **Styles**: Typography sizes, weights, and transformations
+
+### Modifying Existing Cards
+- `src/cards/stats.js` - Statistics card layout and design
+- `src/cards/topLanguages.js` - Languages card layout and design
 
 ## Contributing
 
