@@ -264,9 +264,11 @@
     /* Cards with irregular shapes */
     .cards-container {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 40px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 35px;
       animation: fadeIn 1s ease 0.3s both;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
     @keyframes fadeIn {
@@ -323,27 +325,27 @@
     }
 
     .card-inner {
-      padding: 35px;
+      padding: 30px;
       position: relative;
     }
 
     .card-wrapper h2 {
       font-family: 'Orbitron', monospace;
       color: var(--cyber-cyan);
-      font-size: 14px;
-      margin-bottom: 25px;
+      font-size: 13px;
+      margin-bottom: 22px;
       font-weight: 700;
-      letter-spacing: 3px;
+      letter-spacing: 2.5px;
       text-transform: uppercase;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 9px;
     }
 
     .card-wrapper h2::before {
       content: '';
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       background: var(--cyber-cyan);
       box-shadow: 0 0 10px var(--cyber-cyan);
       animation: pulse 2s ease infinite;
@@ -480,13 +482,22 @@
       .card-inner {
         padding: 20px;
       }
+
+      .cards-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+
+      #advanced-options > div {
+        grid-template-columns: 1fr !important;
+      }
     }
 
     /* Copy button */
     .copy-btn {
       position: absolute;
-      top: 35px;
-      right: 35px;
+      top: 25px;
+      right: 30px;
       padding: 10px 20px;
       background: linear-gradient(135deg, rgba(0, 245, 255, 0.2) 0%, rgba(123, 47, 247, 0.2) 100%);
       border: 1px solid var(--cyber-cyan);
@@ -543,6 +554,54 @@
         </select>
         <button onclick="searchUser()">EXECUTE</button>
       </div>
+      
+      <!-- Advanced Options Toggle -->
+      <div style="margin-top: 20px; text-align: center;">
+        <button onclick="toggleAdvancedOptions()" style="background: transparent; border: 1px solid var(--cyber-cyan); color: var(--cyber-cyan); padding: 10px 20px; font-family: 'JetBrains Mono', monospace; font-size: 11px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease;">
+          <span id="toggle-text">⚙ ADVANCED OPTIONS</span>
+        </button>
+      </div>
+
+      <!-- Advanced Options Panel -->
+      <div id="advanced-options" style="display: none; margin-top: 20px; padding: 25px; background: linear-gradient(135deg, rgba(0, 245, 255, 0.05) 0%, rgba(123, 47, 247, 0.05) 100%); border: 1px solid rgba(0, 245, 255, 0.2); clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <!-- Stats Options -->
+          <div>
+            <h3 style="font-family: 'Orbitron', monospace; color: var(--cyber-cyan); font-size: 14px; margin-bottom: 15px; letter-spacing: 2px;">STATS OPTIONS</h3>
+            
+            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7b8ea8;">
+              <input type="checkbox" id="include-private" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--cyber-cyan);">
+              <span>Include Private Commits</span>
+            </label>
+            
+            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7b8ea8;">
+              <input type="checkbox" id="include-streaks" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--cyber-cyan);">
+              <span>Show Contribution Streaks</span>
+            </label>
+          </div>
+
+          <!-- Languages Options -->
+          <div>
+            <h3 style="font-family: 'Orbitron', monospace; color: var(--cyber-cyan); font-size: 14px; margin-bottom: 15px; letter-spacing: 2px;">LANGUAGES OPTIONS</h3>
+            
+            <label style="display: block; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7b8ea8;">
+              <span style="display: block; margin-bottom: 5px;">Languages to Show: <span id="lang-limit-value" style="color: var(--cyber-cyan);">8</span></span>
+              <input type="range" id="lang-limit" min="3" max="15" value="8" style="width: 100%; cursor: pointer; accent-color: var(--cyber-cyan);" oninput="document.getElementById('lang-limit-value').textContent = this.value">
+            </label>
+            
+            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7b8ea8;">
+              <input type="checkbox" id="include-forks" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--cyber-cyan);">
+              <span>Include Forked Repos</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(0, 245, 255, 0.2); text-align: center;">
+          <button onclick="applyOptionsAndReload()" style="padding: 12px 30px; background: linear-gradient(135deg, var(--cyber-cyan) 0%, var(--cyber-purple) 100%); color: var(--darker-bg); border: none; font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); transition: all 0.3s ease;">
+            APPLY & RELOAD
+          </button>
+        </div>
+      </div>
     </div>
 
     <div id="error-container"></div>
@@ -588,6 +647,12 @@
     let currentUsername = '';
     let currentTheme = 'cyberpunk';
     let cachedUserData = null; // Caché de datos del usuario
+    let currentOptions = {
+      includePrivate: false,
+      includeStreaks: false,
+      langLimit: 8,
+      includeForks: false
+    };
 
     window.addEventListener('load', () => {
       infoDiv.style.display = 'block';
@@ -605,6 +670,37 @@
         updateCardsWithTheme();
       }
     });
+
+    function toggleAdvancedOptions() {
+      const panel = document.getElementById('advanced-options');
+      const toggleText = document.getElementById('toggle-text');
+      if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        toggleText.textContent = '▼ HIDE OPTIONS';
+      } else {
+        panel.style.display = 'none';
+        toggleText.textContent = '⚙ ADVANCED OPTIONS';
+      }
+    }
+
+    function getOptions() {
+      return {
+        includePrivate: document.getElementById('include-private').checked,
+        includeStreaks: document.getElementById('include-streaks').checked,
+        langLimit: parseInt(document.getElementById('lang-limit').value),
+        includeForks: document.getElementById('include-forks').checked
+      };
+    }
+
+    function applyOptionsAndReload() {
+      if (!currentUsername) {
+        showError('⚠️ ERROR: ENTER A USERNAME FIRST');
+        return;
+      }
+      currentOptions = getOptions();
+      cachedUserData = null; // Limpiar caché para forzar recarga con nuevas opciones
+      searchUser();
+    }
 
     function showError(message) {
       errorContainer.innerHTML = `
@@ -692,8 +788,12 @@
         return;
       }
 
-      // Si es el mismo usuario, solo cambiar el tema
-      if (username === currentUsername && cachedUserData) {
+      // Obtener opciones actuales
+      const options = getOptions();
+      
+      // Si es el mismo usuario con las mismas opciones, solo cambiar el tema
+      const optionsChanged = JSON.stringify(options) !== JSON.stringify(currentOptions);
+      if (username === currentUsername && cachedUserData && !optionsChanged) {
         currentTheme = theme;
         updateCardsWithTheme();
         return;
@@ -701,15 +801,25 @@
 
       currentUsername = username;
       currentTheme = theme;
-      cachedUserData = null; // Limpiar caché al cambiar de usuario
+      currentOptions = options;
+      cachedUserData = null; // Limpiar caché al cambiar de usuario o opciones
       errorContainer.innerHTML = '';
       infoDiv.style.display = 'none';
       cardsContainer.style.display = 'none';
       loadingDiv.style.display = 'block';
 
       try {
+        // Construir query string con opciones
+        const queryParams = new URLSearchParams({
+          username: username,
+          includePrivate: options.includePrivate,
+          includeStreaks: options.includeStreaks,
+          langLimit: options.langLimit,
+          includeForks: options.includeForks
+        });
+
         // Primero obtener los datos del usuario
-        const response = await fetch(`/api/user-data?username=${encodeURIComponent(username)}`);
+        const response = await fetch(`/api/user-data?${queryParams}`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch user data');

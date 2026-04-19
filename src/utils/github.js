@@ -16,8 +16,13 @@ function getGithubClient() {
   });
 }
 
-export async function getUserStats(username) {
+export async function getUserStats(username, options = {}) {
   try {
+    const {
+      includePrivate = false,
+      includeStreaks = false
+    } = options;
+
     const github = getGithubClient();
     const [user, repos] = await Promise.all([
       github.get(`/users/${username}`),
@@ -38,8 +43,12 @@ export async function getUserStats(username) {
 
     // Get total commits (all time)
     try {
+      let commitQuery = `author:${username}`;
+      if (!includePrivate) {
+        commitQuery += '+is:public';
+      }
       const commits = await github.get(
-        `/search/commits?q=author:${username}&per_page=1`
+        `/search/commits?q=${commitQuery}&per_page=1`
       );
       totalCommits = commits.data.total_count || 0;
     } catch (error) {
@@ -91,7 +100,7 @@ export async function getUserStats(username) {
       contributedTo = 0;
     }
 
-    return {
+    const result = {
       name: userData.name || userData.login,
       stars: totalStars,
       commits: totalCommits,
@@ -99,13 +108,95 @@ export async function getUserStats(username) {
       issues: totalIssues,
       contributedTo,
     };
+
+    // Calcular rachas si se solicita
+    if (includeStreaks) {
+      try {
+        const streaks = await calculateStreaks(github, username);
+        result.streaks = streaks;
+      } catch (error) {
+        console.error('Error calculating streaks:', error.message);
+        result.streaks = { current: 0, longest: 0 };
+      }
+    }
+
+    return result;
   } catch (error) {
     throw new Error(`Failed to fetch user stats: ${error.message}`);
   }
 }
 
-export async function getTopLanguages(username) {
+async function calculateStreaks(github, username) {
   try {
+    // Obtener eventos recientes para calcular rachas
+    const events = await github.get(`/users/${username}/events/public?per_page=100`);
+    
+    const commitDates = new Set();
+    
+    // Extraer fechas únicas de commits
+    for (const event of events.data) {
+      if (event.type === 'PushEvent' && event.created_at) {
+        const date = event.created_at.split('T')[0];
+        commitDates.add(date);
+      }
+    }
+
+    const sortedDates = Array.from(commitDates).sort().reverse();
+    
+    if (sortedDates.length === 0) {
+      return { current: 0, longest: 0 };
+    }
+
+    // Calcular racha actual
+    let currentStreak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    for (let i = 0; i < sortedDates.length; i++) {
+      const date = new Date(sortedDates[i]);
+      date.setHours(0, 0, 0, 0);
+      
+      const diffDays = Math.floor((today - date) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === i || (i === 0 && diffDays <= 1)) {
+        currentStreak++;
+      } else {
+        break;
+      }
+    }
+
+    // Calcular racha más larga
+    let longestStreak = 0;
+    let tempStreak = 1;
+    
+    for (let i = 1; i < sortedDates.length; i++) {
+      const prevDate = new Date(sortedDates[i - 1]);
+      const currDate = new Date(sortedDates[i]);
+      const diffDays = Math.floor((prevDate - currDate) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) {
+        tempStreak++;
+      } else {
+        longestStreak = Math.max(longestStreak, tempStreak);
+        tempStreak = 1;
+      }
+    }
+    longestStreak = Math.max(longestStreak, tempStreak);
+
+    return {
+      current: currentStreak,
+      longest: longestStreak
+    };
+  } catch (error) {
+    console.error('Error in calculateStreaks:', error.message);
+    return { current: 0, longest: 0 };
+  }
+}
+
+export async function getTopLanguages(username, options = {}) {
+  try {
+    const { limit = 8, includeForks = false } = options;
+
     const github = getGithubClient();
     const repos = await github.get(`/users/${username}/repos?per_page=100&sort=updated`);
 
@@ -113,7 +204,7 @@ export async function getTopLanguages(username) {
 
     // Obtener bytes de código por lenguaje
     for (const repo of repos.data) {
-      if (!repo.fork && repo.language) {
+      if ((includeForks || !repo.fork) && repo.language) {
         try {
           const langStats = await github.get(`/repos/${repo.owner.login}/${repo.name}/languages`);
           
@@ -131,7 +222,7 @@ export async function getTopLanguages(username) {
 
     return Object.entries(languages)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
+      .slice(0, limit)
       .map(([lang, count]) => ({ language: lang, count }));
   } catch (error) {
     throw new Error(`Failed to fetch top languages: ${error.message}`);

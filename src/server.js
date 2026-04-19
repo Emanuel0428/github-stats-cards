@@ -31,18 +31,28 @@ app.get('/', (req, res) => {
 // Endpoint para obtener datos del usuario en JSON (para caché en frontend)
 app.get('/api/user-data', async (req, res) => {
   try {
-    const { username } = req.query;
+    const { username, includePrivate, includeStreaks, langLimit, includeForks } = req.query;
     if (!username) {
       return res.status(400).json({ error: 'Username is required' });
     }
     
+    const statsOptions = {
+      includePrivate: includePrivate === 'true',
+      includeStreaks: includeStreaks === 'true'
+    };
+    
+    const langOptions = {
+      limit: parseInt(langLimit) || 8,
+      includeForks: includeForks === 'true'
+    };
+    
     const [stats, languages] = await Promise.all([
-      getUserStats(username),
-      getTopLanguages(username)
+      getUserStats(username, statsOptions),
+      getTopLanguages(username, langOptions)
     ]);
     
     res.setHeader('Cache-Control', 'public, max-age=3600');
-    res.json({ stats, languages });
+    res.json({ stats, languages, options: { statsOptions, langOptions } });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

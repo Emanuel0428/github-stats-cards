@@ -21,11 +21,15 @@ const languageColors = {
 export async function getTopLanguagesCard(username, preloadedLanguages = null) {
   const languages = preloadedLanguages || await getTopLanguages(username);
   
-  // Limitar a máximo 8 lenguajes
-  const limitedLanguages = languages.slice(0, 7);
+  // Adaptar altura según cantidad de lenguajes
+  const langCount = languages.length;
+  const limitedLanguages = languages.slice(0, Math.min(langCount, 15));
 
   const width = 520;
-  const height = 340;
+  const baseHeight = 120;
+  const heightPerLang = 35;
+  const bottomPadding = 40; // Padding inferior para mejor distribución
+  const height = baseHeight + (limitedLanguages.length * heightPerLang) + bottomPadding;
 
   let yOffset = 85;
   let barsHTML = '';
@@ -34,7 +38,7 @@ export async function getTopLanguagesCard(username, preloadedLanguages = null) {
     const percentage = (lang.count / limitedLanguages[0].count) * 100;
     const barWidth = (percentage / 100) * 240;
     const color = languageColors[lang.language] || '#00f5ff';
-    const y = yOffset + index * 35;
+    const y = yOffset + index * heightPerLang;
 
     // Crear forma orgánica para cada barra
     const waveOffset = Math.sin(index * 0.5) * 2;
@@ -93,7 +97,7 @@ export async function getTopLanguagesCard(username, preloadedLanguages = null) {
         </filter>
 
         <clipPath id="blobClip2">
-          <path d="M 0,20 Q 0,0 20,0 L 480,0 Q 500,0 500,20 Q 510,40 500,60 L 500,300 Q 500,320 480,320 L 40,320 Q 20,320 20,300 L 20,40 Q 10,20 0,20 Z" />
+          <path d="M 0,20 Q 0,0 20,0 L 480,0 Q 500,0 500,20 Q 510,40 500,60 L 500,${height - 40} Q 500,${height - 20} 480,${height - 20} L 40,${height - 20} Q 20,${height - 20} 20,${height - 40} L 20,40 Q 10,20 0,20 Z" />
         </clipPath>
 
         <style>
@@ -155,8 +159,8 @@ export async function getTopLanguagesCard(username, preloadedLanguages = null) {
       <!-- Corner accents -->
       <path class="corner-accent" d="M 15,15 L 15,35 M 15,15 L 35,15"/>
       <path class="corner-accent" d="M 505,15 L 485,15 M 505,15 L 505,35"/>
-      <path class="corner-accent" d="M 15,325 L 15,305 M 15,325 L 35,325"/>
-      <path class="corner-accent" d="M 505,325 L 485,325 M 505,325 L 505,305"/>
+      <path class="corner-accent" d="M 15,${height - 15} L 15,${height - 35} M 15,${height - 15} L 35,${height - 15}"/>
+      <path class="corner-accent" d="M 505,${height - 15} L 485,${height - 15} M 505,${height - 15} L 505,${height - 35}"/>
 
       <!-- Title -->
       <text class="title" x="30" y="45">TOP LANGUAGES</text>
