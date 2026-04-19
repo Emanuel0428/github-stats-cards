@@ -1,0 +1,59 @@
+# robots.txt for GitHub Stats Cards Generator
+# https://github-stats-cards-six.vercel.app
+
+User-agent: *
+Allow: /
+Allow: /themes/
+Allow: /docs/
+Allow: /examples/
+
+# Block API endpoints from indexing
+Disallow: /api/
+Disallow: /stats?
+Disallow: /top-languages?
+
+# Allow crawling of static assets
+Allow: /*.css
+Allow: /*.js
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.svg
+
+# Sitemap location
+Sitemap: https://github-stats-cards-six.vercel.app/sitemap.xml
+
+# Crawl delay (be nice to servers)
+Crawl-delay: 1
+
+# Specific bot rules
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# AI Crawlers (for AI search optimization)
+User-agent: GPTBot
+Allow: /
+Allow: /llms.txt
+
+User-agent: ChatGPT-User
+Allow: /
+Allow: /llms.txt
+
+User-agent: anthropic-ai
+Allow: /
+Allow: /llms.txt
+
+User-agent: Claude-Web
+Allow: /
+Allow: /llms.txt
+
+# Block bad bots
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10

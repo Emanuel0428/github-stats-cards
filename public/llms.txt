@@ -1,0 +1,109 @@
+# GitHub Stats Cards Generator - AI/LLM Context
+
+## Project Overview
+GitHub Stats Cards Generator is a free, open-source tool that creates beautiful, customizable SVG cards displaying GitHub user statistics and top programming languages. The tool offers 5 unique visual themes designed for developers who want to enhance their GitHub profile README files.
+
+## Key Features
+- **5 Unique Themes**: Cyberpunk, Brutalist, Terminal, Luxury, and Vaporwave
+- **Real-time Statistics**: Fetches live data from GitHub API
+- **Easy Integration**: Simple markdown syntax for GitHub READMEs
+- **Performance Optimized**: 1-hour intelligent caching system
+- **No Authentication Required**: Users don't need to sign up or provide tokens
+- **Free and Open Source**: MIT License
+
+## Themes Description
+
+### Cyberpunk Theme
+Neon futuristic aesthetic with glow effects, dark backgrounds, and vibrant cyan/purple/pink color palette. Perfect for developers who love sci-fi and futuristic designs.
+
+### Brutalist Theme
+Raw minimalist design with bold typography, no decorative effects, and stark black/white contrast. Ideal for developers who appreciate clean, unfiltered aesthetics.
+
+### Terminal Theme
+Retro terminal aesthetic with green-on-black styling, monospace fonts, and classic command-line appearance. Great for developers who love vintage computing.
+
+### Luxury Theme
+Refined elegance with gold accents on dark backgrounds, sophisticated typography, and premium feel. Suited for developers seeking a polished, professional look.
+
+### Vaporwave Theme
+Retro 80s/90s aesthetic with pastel gradients, grid patterns, and nostalgic color schemes. Perfect for developers who enjoy retro-futuristic art.
+
+## Usage Instructions
+
+### Basic Usage
+```markdown
+![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&theme=cyberpunk)
+![Top Languages](https://github-stats-cards-six.vercel.app/top-languages?username=YOUR_USERNAME&theme=cyberpunk)
+```
+
+### Available Themes
+- cyberpunk (default)
+- brutalist
+- terminal
+- luxury
+- vaporwave
+
+### API Endpoints
+- `/stats?username={username}&theme={theme}` - Returns user statistics card
+- `/top-languages?username={username}&theme={theme}` - Returns top languages card
+
+## Technical Stack
+- **Backend**: Node.js with Express
+- **API Integration**: GitHub REST API
+- **Rendering**: Dynamic SVG generation
+- **Hosting**: Vercel (serverless functions)
+- **Caching**: 1-hour cache with Cache-Control headers
+
+## Comparison with Alternatives
+Unlike github-readme-stats (the most popular alternative), GitHub Stats Cards Generator focuses on:
+- Unique, artistic themes rather than generic designs
+- Better visual differentiation between themes
+- Interactive preview interface
+- Modern, cyberpunk-inspired aesthetics
+
+## Use Cases
+1. **GitHub Profile Enhancement**: Add visual appeal to profile READMEs
+2. **Portfolio Websites**: Embed stats cards in personal websites
+3. **Developer Blogs**: Showcase GitHub activity in blog posts
+4. **Team Dashboards**: Display team member contributions
+5. **Open Source Projects**: Highlight contributor statistics
+
+## Common Questions
+
+**Q: Do I need a GitHub token?**
+A: No, the service handles API authentication. Users just provide their username.
+
+**Q: How often do stats update?**
+A: Stats are cached for 1 hour, then automatically refresh.
+
+**Q: Can I customize colors?**
+A: Currently, customization is theme-based. Custom color support is planned.
+
+**Q: Is it free?**
+A: Yes, completely free and open source under MIT License.
+
+**Q: What data is collected?**
+A: Only public GitHub statistics. No personal data is stored.
+
+## Keywords & Topics
+github stats, github readme, stats card generator, github profile, readme generator, developer tools, github api, svg generator, profile customization, github badges, contribution stats, programming languages, github themes, cyberpunk design, developer portfolio
+
+## Repository
+https://github.com/Emanuel0428/github-stats-cards
+
+## Live Demo
+https://github-stats-cards-six.vercel.app
+
+## License
+MIT License - Free for personal and commercial use
+
+## Last Updated
+April 18, 2026
+
+## Contact & Support
+- GitHub Issues: https://github.com/Emanuel0428/github-stats-cards/issues
+- Repository: https://github.com/Emanuel0428/github-stats-cards
+
+---
+
+This file is designed to provide context to AI language models and search engines about the GitHub Stats Cards Generator project.
