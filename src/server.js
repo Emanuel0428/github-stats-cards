@@ -61,7 +61,8 @@ app.get('/api/user-data', async (req, res) => {
     
     const langOptions = {
       limit: parseInt(langLimit) || 8,
-      includeForks: includeForks === 'true'
+      includeForks: includeForks === 'true',
+      includePrivate: includePrivate === 'true'
     };
     
     const [stats, languages] = await Promise.all([

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 function getGithubClient() {
   const token = process.env.PAT_1;
-  
+
   if (!token) {
     throw new Error('GitHub token (PAT_1) is required in .env file');
   }
@@ -16,6 +16,54 @@ function getGithubClient() {
   });
 }
 
+// Devuelve el login del dueño del token (o null si falla).
+// Solo podemos leer repos privados cuando el username consultado coincide
+// con el dueño del token.
+async function getAuthenticatedLogin(github) {
+  try {
+    const me = await github.get('/user');
+    return me.data.login;
+  } catch (error) {
+    console.error('Error fetching authenticated user:', error.message);
+    return null;
+  }
+}
+
+// Obtiene TODOS los repos paginando (GitHub limita per_page a 100).
+// Si includePrivate y el username es el dueño del token, usa /user/repos
+// (endpoint autenticado que sí devuelve privados); de lo contrario usa el
+// endpoint público /users/{username}/repos.
+async function fetchAllRepos(github, username, includePrivate) {
+  const authLogin = includePrivate ? await getAuthenticatedLogin(github) : null;
+  const usePrivateEndpoint =
+    includePrivate &&
+    authLogin &&
+    authLogin.toLowerCase() === username.toLowerCase();
+
+  if (includePrivate && !usePrivateEndpoint) {
+    console.warn(
+      `includePrivate=true pero el token no pertenece a "${username}" (dueño: ${authLogin || 'desconocido'}). Solo se contarán repos públicos.`
+    );
+  }
+
+  const repos = [];
+  let page = 1;
+
+  while (true) {
+    const path = usePrivateEndpoint
+      ? `/user/repos?per_page=100&page=${page}&visibility=all&affiliation=owner`
+      : `/users/${username}/repos?per_page=100&page=${page}&sort=updated`;
+
+    const { data } = await github.get(path);
+    repos.push(...data);
+
+    if (!Array.isArray(data) || data.length < 100) break;
+    page++;
+  }
+
+  return repos;
+}
+
 export async function getUserStats(username, options = {}) {
   try {
     const {
@@ -24,13 +72,12 @@ export async function getUserStats(username, options = {}) {
     } = options;
 
     const github = getGithubClient();
-    const [user, repos] = await Promise.all([
+    const [user, reposData] = await Promise.all([
       github.get(`/users/${username}`),
-      github.get(`/users/${username}/repos?per_page=100&sort=updated`),
+      fetchAllRepos(github, username, includePrivate),
     ]);
 
     const userData = user.data;
-    const reposData = repos.data;
 
     let totalStars = 0;
     let totalCommits = 0;
@@ -56,10 +103,12 @@ export async function getUserStats(username, options = {}) {
       totalCommits = 0;
     }
 
+    const publicFilter = includePrivate ? '' : '+is:public';
+
     // Get total PRs (all time)
     try {
       const prs = await github.get(
-        `/search/issues?q=author:${username}+type:pr&per_page=1`
+        `/search/issues?q=author:${username}+type:pr${publicFilter}&per_page=1`
       );
       totalPRs = prs.data.total_count || 0;
     } catch (error) {
@@ -70,7 +119,7 @@ export async function getUserStats(username, options = {}) {
     // Get total issues created (all time, excluding PRs)
     try {
       const issues = await github.get(
-        `/search/issues?q=author:${username}+type:issue&per_page=1`
+        `/search/issues?q=author:${username}+type:issue${publicFilter}&per_page=1`
       );
       totalIssues = issues.data.total_count || 0;
     } catch (error) {
@@ -80,8 +129,13 @@ export async function getUserStats(username, options = {}) {
     // Get contributed repositories (repos where user has contributed but is not the owner)
     let contributedTo = 0;
     try {
-      // Obtener eventos recientes del usuario para encontrar repos donde ha contribuido
-      const events = await github.get(`/users/${username}/events/public?per_page=100`);
+      // Obtener eventos recientes del usuario para encontrar repos donde ha contribuido.
+      // /events incluye eventos privados cuando el token es del propio usuario;
+      // /events/public se limita a actividad pública.
+      const eventsPath = includePrivate
+        ? `/users/${username}/events?per_page=100`
+        : `/users/${username}/events/public?per_page=100`;
+      const events = await github.get(eventsPath);
       const contributedRepos = new Set();
       
       for (const event of events.data) {
@@ -112,7 +166,7 @@ export async function getUserStats(username, options = {}) {
     // Calcular rachas si se solicita
     if (includeStreaks) {
       try {
-        const streaks = await calculateStreaks(github, username);
+        const streaks = await calculateStreaks(github, username, includePrivate);
         result.streaks = streaks;
       } catch (error) {
         console.error('Error calculating streaks:', error.message);
@@ -126,10 +180,14 @@ export async function getUserStats(username, options = {}) {
   }
 }
 
-async function calculateStreaks(github, username) {
+async function calculateStreaks(github, username, includePrivate = false) {
   try {
-    // Obtener eventos recientes para calcular rachas
-    const events = await github.get(`/users/${username}/events/public?per_page=100`);
+    // Obtener eventos recientes para calcular rachas (incluye privados si el
+    // token es del propio usuario y includePrivate está activo).
+    const eventsPath = includePrivate
+      ? `/users/${username}/events?per_page=100`
+      : `/users/${username}/events/public?per_page=100`;
+    const events = await github.get(eventsPath);
     
     const commitDates = new Set();
     
@@ -195,15 +253,15 @@ async function calculateStreaks(github, username) {
 
 export async function getTopLanguages(username, options = {}) {
   try {
-    const { limit = 8, includeForks = false } = options;
+    const { limit = 8, includeForks = false, includePrivate = false } = options;
 
     const github = getGithubClient();
-    const repos = await github.get(`/users/${username}/repos?per_page=100&sort=updated`);
+    const repos = await fetchAllRepos(github, username, includePrivate);
 
     const languages = {};
 
     // Obtener bytes de código por lenguaje
-    for (const repo of repos.data) {
+    for (const repo of repos) {
       if ((includeForks || !repo.fork) && repo.language) {
         try {
           const langStats = await github.get(`/repos/${repo.owner.login}/${repo.name}/languages`);
