@@ -85,7 +85,7 @@ app.get('/stats', async (req, res) => {
     }
     
     // Si se proporcionan datos pre-cargados, usarlos (para evitar llamadas a GitHub)
-    let stats;
+    let stats = null;
     if (data) {
       try {
         stats = JSON.parse(decodeURIComponent(data));
@@ -94,7 +94,16 @@ app.get('/stats', async (req, res) => {
         stats = null;
       }
     }
-    
+
+    // Sin datos pre-cargados (p. ej. embebido en un README): obtenerlos
+    // respetando las opciones de la query (privados, streaks).
+    if (!stats) {
+      stats = await getUserStats(username, {
+        includePrivate: req.query.includePrivate === 'true',
+        includeStreaks: req.query.includeStreaks === 'true'
+      });
+    }
+
     let svg;
     switch(theme) {
       case 'brutalist':
@@ -129,7 +138,7 @@ app.get('/top-languages', async (req, res) => {
     }
     
     // Si se proporcionan datos pre-cargados, usarlos (para evitar llamadas a GitHub)
-    let languages;
+    let languages = null;
     if (data) {
       try {
         languages = JSON.parse(decodeURIComponent(data));
@@ -138,7 +147,17 @@ app.get('/top-languages', async (req, res) => {
         languages = null;
       }
     }
-    
+
+    // Sin datos pre-cargados (p. ej. embebido en un README): obtenerlos
+    // respetando las opciones de la query (privados, forks, límite).
+    if (!languages) {
+      languages = await getTopLanguages(username, {
+        limit: parseInt(req.query.langLimit) || 8,
+        includeForks: req.query.includeForks === 'true',
+        includePrivate: req.query.includePrivate === 'true'
+      });
+    }
+
     let svg;
     switch(theme) {
       case 'brutalist':
