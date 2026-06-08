@@ -726,7 +726,7 @@
           <option value="luxury">LUXURY</option>
           <option value="vaporwave">VAPORWAVE</option>
         </select>
-        <button onclick="searchUser()">EXECUTE</button>
+        <button id="execute-btn" onclick="searchUser()">EXECUTE</button>
       </div>
       
       <!-- Advanced Options Toggle -->
@@ -743,10 +743,13 @@
           <div>
             <h3 style="font-family: 'Orbitron', monospace; color: var(--cyber-cyan); font-size: 14px; margin-bottom: 15px; letter-spacing: 2px;">STATS OPTIONS</h3>
             
-            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7b8ea8;">
+            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7b8ea8;">
               <input type="checkbox" id="include-private" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--cyber-cyan);">
-              <span>Include Private Commits</span>
+              <span>Include Private Repos &amp; Commits</span>
             </label>
+            <p style="margin: 0 0 12px 28px; font-size: 10px; line-height: 1.4; color: #5a6a85;">
+              Only works for the account that owns the server's GitHub token.
+            </p>
             
             <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7b8ea8;">
               <input type="checkbox" id="include-streaks" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--cyber-cyan);">
@@ -896,8 +899,65 @@
       includeForks: false
     };
 
+    // Sincroniza usuario/tema/opciones en la URL (deep-link compartible) y en
+    // localStorage (para recordar la última consulta al volver).
+    function persistState() {
+      const params = new URLSearchParams({ username: currentUsername, theme: currentTheme });
+      if (currentOptions.includePrivate) params.set('includePrivate', 'true');
+      if (currentOptions.includeStreaks) params.set('includeStreaks', 'true');
+      if (currentOptions.includeForks) params.set('includeForks', 'true');
+      if (currentOptions.langLimit !== 8) params.set('langLimit', currentOptions.langLimit);
+      history.replaceState(null, '', `?${params.toString()}`);
+      try {
+        localStorage.setItem('gsc:state', JSON.stringify({
+          username: currentUsername, theme: currentTheme, options: currentOptions
+        }));
+      } catch (e) { /* almacenamiento no disponible */ }
+    }
+
+    // Restaura estado desde la URL (prioridad) o localStorage, y refleja los
+    // valores en los controles del formulario.
+    function restoreState() {
+      const params = new URLSearchParams(window.location.search);
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem('gsc:state')); } catch (e) {}
+
+      const username = params.get('username') || (saved && saved.username) || '';
+      const theme = params.get('theme') || (saved && saved.theme) || 'cyberpunk';
+      const opts = {
+        includePrivate: params.has('includePrivate')
+          ? params.get('includePrivate') === 'true'
+          : !!(saved && saved.options && saved.options.includePrivate),
+        includeStreaks: params.has('includeStreaks')
+          ? params.get('includeStreaks') === 'true'
+          : !!(saved && saved.options && saved.options.includeStreaks),
+        includeForks: params.has('includeForks')
+          ? params.get('includeForks') === 'true'
+          : !!(saved && saved.options && saved.options.includeForks),
+        langLimit: parseInt(params.get('langLimit')) ||
+          (saved && saved.options && saved.options.langLimit) || 8
+      };
+
+      usernameInput.value = username;
+      themeSelector.value = theme;
+      document.getElementById('include-private').checked = opts.includePrivate;
+      document.getElementById('include-streaks').checked = opts.includeStreaks;
+      document.getElementById('include-forks').checked = opts.includeForks;
+      document.getElementById('lang-limit').value = opts.langLimit;
+      document.getElementById('lang-limit-value').textContent = opts.langLimit;
+      if (opts.includePrivate || opts.includeStreaks || opts.includeForks || opts.langLimit !== 8) {
+        toggleAdvancedOptions();
+      }
+      return username;
+    }
+
     window.addEventListener('load', () => {
-      infoDiv.style.display = 'block';
+      const username = restoreState();
+      if (username) {
+        searchUser();
+      } else {
+        infoDiv.style.display = 'block';
+      }
     });
 
     usernameInput.addEventListener('keypress', (e) => {
@@ -911,6 +971,17 @@
         // Si ya tenemos datos cacheados, solo cambiar el tema sin recargar
         updateCardsWithTheme();
       }
+    });
+
+    // Al cambiar cualquier opción avanzada (privados, streaks, forks, límite de
+    // lenguajes) recargar automáticamente para que las cards Y el markdown a
+    // copiar reflejen la nueva configuración al instante.
+    ['include-private', 'include-streaks', 'include-forks', 'lang-limit'].forEach((id) => {
+      document.getElementById(id).addEventListener('change', () => {
+        if (currentUsername) {
+          applyOptionsAndReload();
+        }
+      });
     });
 
     function toggleAdvancedOptions() {
@@ -953,16 +1024,30 @@
       `;
     }
 
+    // Construye la URL de una card incluyendo SOLO las opciones activas, para
+    // que el markdown copiado refleje privados/streaks/forks/límite en el README.
+    function buildCardUrl(endpoint) {
+      const params = new URLSearchParams({
+        username: currentUsername,
+        theme: currentTheme
+      });
+      if (currentOptions.includePrivate) params.set('includePrivate', 'true');
+      if (currentOptions.includeStreaks) params.set('includeStreaks', 'true');
+      if (currentOptions.includeForks) params.set('includeForks', 'true');
+      if (endpoint === 'top-languages' && currentOptions.langLimit !== 8) {
+        params.set('langLimit', currentOptions.langLimit);
+      }
+      return `${window.location.origin}/${endpoint}?${params.toString()}`;
+    }
+
     function copyMarkdown(type) {
       if (!currentUsername) return;
 
-      const baseUrl = window.location.origin;
       let markdown = '';
-
       if (type === 'stats') {
-        markdown = `![GitHub Stats](${baseUrl}/stats?username=${currentUsername}&theme=${currentTheme})`;
+        markdown = `![GitHub Stats](${buildCardUrl('stats')})`;
       } else if (type === 'languages') {
-        markdown = `![Top Languages](${baseUrl}/top-languages?username=${currentUsername}&theme=${currentTheme})`;
+        markdown = `![Top Languages](${buildCardUrl('top-languages')})`;
       }
 
       navigator.clipboard.writeText(markdown).then(() => {
@@ -983,6 +1068,7 @@
     async function updateCardsWithTheme() {
       const theme = themeSelector.value;
       currentTheme = theme;
+      persistState();
 
       if (!cachedUserData) return;
 
@@ -1045,10 +1131,16 @@
       currentTheme = theme;
       currentOptions = options;
       cachedUserData = null; // Limpiar caché al cambiar de usuario o opciones
+      persistState();
       errorContainer.innerHTML = '';
       infoDiv.style.display = 'none';
       cardsContainer.style.display = 'none';
       loadingDiv.style.display = 'block';
+
+      const executeBtn = document.getElementById('execute-btn');
+      executeBtn.disabled = true;
+      executeBtn.style.opacity = '0.5';
+      executeBtn.style.cursor = 'wait';
 
       try {
         // Construir query string con opciones
@@ -1076,6 +1168,10 @@
         console.error('Error fetching user data:', error);
         loadingDiv.style.display = 'none';
         showError('⚠️ ERROR: FAILED TO LOAD DATA // CHECK USERNAME OR GITHUB TOKEN');
+      } finally {
+        executeBtn.disabled = false;
+        executeBtn.style.opacity = '';
+        executeBtn.style.cursor = 'pointer';
       }
     }
   </script>
