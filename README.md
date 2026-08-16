@@ -261,6 +261,25 @@ The simplest way to use GitHub Stats Cards:
 - `luxury` - Elegant gold accents
 - `vaporwave` - 80s retro vibes
 
+### Backgrounds
+
+Every theme animates its own background — a drifting grid in Cyberpunk, CRT scanlines in Terminal, a gold aurora in Luxury, a scrolling horizon in Vaporwave, a snapping hatch in Brutalist. It's pure CSS inside the SVG, so it works in a README with no scripts and no extra requests. Readers who enable "reduce motion" in their OS always get a still card.
+
+| Parameter | Values | Effect |
+| --- | --- | --- |
+| `motion` | `off` | Renders a completely static card |
+| `bg` | image URL | Uses your own image as the background |
+
+```markdown
+![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&motion=off)
+![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&bg=https://example.com/bg.png)
+```
+
+`bg` accepts a public PNG, JPEG, GIF or WebP up to 500KB. The server downloads it and embeds it in the card, which is why it also works inside a README — a plain `<img>`-embedded SVG can't fetch anything itself. An overlay keeps the text readable. If the URL fails, the card falls back to its theme background instead of breaking.
+
+> [!NOTE]
+> Video backgrounds aren't possible in a README: GitHub serves cards as images, and an SVG in that context can't play video or load anything external. Animated GIFs are embedded, but some browsers show only the first frame — use a still image for predictable results.
+
 > [!TIP]
 > Visit the [live demo](https://github-stats-cards-six.vercel.app) to preview all themes with your username!
 

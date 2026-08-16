@@ -1,4 +1,5 @@
 import { getTopLanguages } from '../utils/github.js';
+import { background } from './background.js';
 
 const languageColors = {
   JavaScript: '#fffb96',
@@ -18,13 +19,17 @@ const languageColors = {
   SQL: '#fffb96',
 };
 
-export async function getTopLanguagesVaporwaveCard(username, preloadedLanguages = null) {
+export async function getTopLanguagesVaporwaveCard(username, preloadedLanguages = null, options = {}) {
   const languages = preloadedLanguages || await getTopLanguages(username);
   
   const limitedLanguages = languages.slice(0, 7);
 
   const width = 520;
   const height = 340;
+
+  const bgx = await background('vaporwave', {
+    width, height, bg: options.bg, motion: options.motion
+  });
 
   let yOffset = 105;
   let barsHTML = '';
@@ -50,13 +55,8 @@ export async function getTopLanguagesVaporwaveCard(username, preloadedLanguages 
           <stop offset="100%" style="stop-color:#01cdfe;stop-opacity:1" />
         </linearGradient>
         
-        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#05ffa1" stroke-width="0.5" opacity="0.3"/>
-        </pattern>
-        
         <style>
           .card-bg { fill: url(#vaporBg); }
-          .grid-bg { fill: url(#grid); }
           
           .title { 
             font-family: 'Impact', 'Arial Black', sans-serif; 
@@ -81,11 +81,12 @@ export async function getTopLanguagesVaporwaveCard(username, preloadedLanguages 
             font-weight: 400;
           }
         </style>
+        ${bgx.defs}
       </defs>
 
       <!-- Background -->
       <rect class="card-bg" x="0" y="0" width="${width}" height="${height}"/>
-      <rect class="grid-bg" x="0" y="0" width="${width}" height="${height}"/>
+      ${bgx.layers}
 
       <!-- Title -->
       <text class="title" x="30" y="50">TOP LANGUAGES</text>
