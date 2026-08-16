@@ -11,7 +11,7 @@ export async function getStatsCard(username, preloadedStats = null, options = {}
   const height = includeStreaks ? 340 : 280;
 
   const bgx = await background('cyberpunk', {
-    width, height, bg: options.bg, motion: options.motion,
+    ...options, width, height,
     clip: 'clip-path="url(#blobClip)"'
   });
 

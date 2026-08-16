@@ -11,7 +11,7 @@ export async function getStatsBrutalistCard(username, preloadedStats = null, opt
   const height = includeStreaks ? 340 : 280;
 
   const bgx = await background('brutalist', {
-    width, height, bg: options.bg, motion: options.motion
+    ...options, width, height
   });
 
   // Construir las estadísticas dinámicamente

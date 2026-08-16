@@ -21,11 +21,19 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Opciones de fondo comunes a /stats y /top-languages. La animación viene
-// activada; `motion=off` la desactiva.
+// activada; `motion=off` la desactiva. El resto son ajustes del fondo del
+// usuario: los valores llegan como texto y background.js los acota.
 function backgroundOptions(req) {
+  const q = req.query;
   return {
-    bg: req.query.bg,
-    motion: req.query.motion !== 'off'
+    bg: q.bg,
+    motion: q.motion !== 'off',
+    scrim: q.scrim,
+    scrimColor: q.scrimColor,
+    fit: q.bgFit,
+    pos: q.bgPos,
+    blur: q.bgBlur,
+    gray: q.bgGray === 'on' || q.bgGray === '1' || q.bgGray === 'true'
   };
 }
 

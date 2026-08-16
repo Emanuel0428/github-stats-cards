@@ -28,7 +28,7 @@ export async function getTopLanguagesLuxuryCard(username, preloadedLanguages = n
   const height = 340;
 
   const bgx = await background('luxury', {
-    width, height, bg: options.bg, motion: options.motion
+    ...options, width, height
   });
 
   let yOffset = 105;

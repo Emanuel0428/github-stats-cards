@@ -28,7 +28,7 @@ export async function getTopLanguagesTerminalCard(username, preloadedLanguages =
   const height = 340;
 
   const bgx = await background('terminal', {
-    width, height, bg: options.bg, motion: options.motion
+    ...options, width, height
   });
 
   let yOffset = 105;

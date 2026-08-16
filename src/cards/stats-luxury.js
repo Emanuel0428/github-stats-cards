@@ -11,7 +11,7 @@ export async function getStatsLuxuryCard(username, preloadedStats = null, option
   const height = includeStreaks ? 340 : 280;
 
   const bgx = await background('luxury', {
-    width, height, bg: options.bg, motion: options.motion
+    ...options, width, height
   });
 
   // Construir las estadísticas dinámicamente

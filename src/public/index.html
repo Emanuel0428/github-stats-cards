@@ -785,12 +785,78 @@
             Each theme animates differently. Viewers with "reduce motion" enabled always see a still card.
           </p>
 
-          <label style="display: block; margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7b8ea8;">
-            <span style="display: block; margin-bottom: 5px;">Background Image URL</span>
-            <input type="url" id="bg-url" placeholder="https://example.com/my-background.png" style="width: 100%; padding: 10px 12px; border: 1px solid rgba(0, 245, 255, 0.2); background: rgba(26, 31, 58, 0.6); color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none;">
+          <style>
+            .bgo-label { display: block; margin-bottom: 5px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7b8ea8; }
+            .bgo-input { width: 100%; padding: 10px 12px; border: 1px solid rgba(0, 245, 255, 0.2); background: rgba(26, 31, 58, 0.6); color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none; }
+            .bgo-hint { margin: 6px 0 0; font-size: 10px; line-height: 1.4; color: #5a6a85; }
+            .bgo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-top: 16px; }
+            .bgo-input[type="color"] { padding: 2px; height: 38px; cursor: pointer; }
+            .bgo-input[type="range"] { padding: 0; border: none; background: none; cursor: pointer; accent-color: var(--cyber-cyan); }
+          </style>
+
+          <label class="bgo-label" for="bg-preset">Quick Background</label>
+          <select id="bg-preset" class="bgo-input">
+            <option value="">— none (theme default) —</option>
+            <optgroup label="Generated (no file)">
+              <option value="mesh-neon">mesh-neon</option>
+              <option value="mesh-sunset">mesh-sunset</option>
+              <option value="mesh-mint">mesh-mint</option>
+              <option value="mesh-ember">mesh-ember</option>
+              <option value="grid-dark">grid-dark</option>
+              <option value="grid-light">grid-light</option>
+              <option value="dots-dark">dots-dark</option>
+            </optgroup>
+          </select>
+
+          <div class="bgo-grid" style="grid-template-columns: 1fr auto;">
+            <label class="bgo-label" style="margin: 0;" for="bg-url">
+              Background <span style="color: #5a6a85;">— image/GIF URL, <code>#hex</code>, <code>linear:#a,#b:135</code>, <code>preset:name</code></span>
+              <input type="text" id="bg-url" class="bgo-input" placeholder="https://example.com/loop.gif" style="margin-top: 5px;">
+            </label>
+            <label class="bgo-label" style="margin: 0;" for="bg-color">
+              Color
+              <input type="color" id="bg-color" class="bgo-input" value="#0d1117" style="margin-top: 5px; width: 56px;">
+            </label>
+          </div>
+          <p class="bgo-hint" id="bg-warning" style="display: none; color: #ffb86c;"></p>
+          <p class="bgo-hint">
+            PNG, JPEG, GIF or WebP up to 2MB, from a public URL. The image is embedded in the card, so animated GIFs keep looping inside a README. Drop your own files in <code>src/public/backgrounds/</code> to use them as <code>preset:name</code>.
+          </p>
+
+          <div class="bgo-grid">
+            <label class="bgo-label" for="bg-fit">
+              Fit
+              <select id="bg-fit" class="bgo-input" style="margin-top: 5px;">
+                <option value="cover">cover (fill, crop)</option>
+                <option value="contain">contain (fit, letterbox)</option>
+                <option value="stretch">stretch (distort)</option>
+              </select>
+            </label>
+            <label class="bgo-label" for="bg-pos">
+              Position
+              <select id="bg-pos" class="bgo-input" style="margin-top: 5px;">
+                <option value="center">center</option>
+                <option value="top">top</option>
+                <option value="bottom">bottom</option>
+                <option value="left">left</option>
+                <option value="right">right</option>
+              </select>
+            </label>
+            <label class="bgo-label" for="bg-scrim">
+              Overlay: <span id="bg-scrim-value" style="color: var(--cyber-cyan);">65</span>%
+              <input type="range" id="bg-scrim" class="bgo-input" min="0" max="100" value="65" style="margin-top: 12px;">
+            </label>
+            <label class="bgo-label" for="bg-blur">
+              Blur: <span id="bg-blur-value" style="color: var(--cyber-cyan);">0</span>
+              <input type="range" id="bg-blur" class="bgo-input" min="0" max="20" value="0" style="margin-top: 12px;">
+            </label>
+          </div>
+          <label style="display: flex; align-items: center; gap: 10px; margin-top: 14px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7b8ea8;">
+            <input type="checkbox" id="bg-gray" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--cyber-cyan);">
+            <span>Grayscale</span>
           </label>
-          <p style="margin: 0; font-size: 10px; line-height: 1.4; color: #5a6a85;">
-            PNG, JPEG, GIF or WebP up to 500KB, from a public URL. The image is embedded in the card so it also works inside a README. A dark overlay keeps the text readable. Animated GIFs may show only their first frame in some browsers.
+          <p class="bgo-hint">
+            Fit, position, blur and grayscale only affect image backgrounds. The overlay keeps the card text readable — it defaults to 65% over an image and 0% over a flat colour or preset.
           </p>
         </div>
 
@@ -919,14 +985,37 @@
       langLimit: 8,
       includeForks: false,
       motion: true,
-      bg: ''
+      bg: '',
+      scrim: 65,
+      fit: 'cover',
+      pos: 'center',
+      blur: 0,
+      gray: false
     };
 
+    // Una imagen necesita velo para que el texto se lea; un color o un preset
+    // elegidos a propósito, no. Mismo criterio que background.js en el servidor.
+    function isImageBg(bg) {
+      return /^(https?:\/\/|preset:)/i.test(bg);
+    }
+    function defaultScrim(bg) {
+      return isImageBg(bg) ? 65 : 0;
+    }
+
     // Único sitio donde se decide qué opciones de fondo viajan en la URL: lo
-    // comparten el deep-link, el markdown que se copia y la preview.
+    // comparten el deep-link, el markdown que se copia y la preview. Solo van
+    // las que se apartan del valor por defecto, para no ensuciar el markdown.
     function appendBgParams(params) {
       if (!currentOptions.motion) params.set('motion', 'off');
-      if (currentOptions.bg) params.set('bg', currentOptions.bg);
+      if (!currentOptions.bg) return params;
+      params.set('bg', currentOptions.bg);
+      if (currentOptions.scrim !== defaultScrim(currentOptions.bg)) {
+        params.set('scrim', currentOptions.scrim);
+      }
+      if (currentOptions.fit !== 'cover') params.set('bgFit', currentOptions.fit);
+      if (currentOptions.pos !== 'center') params.set('bgPos', currentOptions.pos);
+      if (currentOptions.blur > 0) params.set('bgBlur', currentOptions.blur);
+      if (currentOptions.gray) params.set('bgGray', 'on');
       return params;
     }
 
@@ -971,8 +1060,26 @@
         motion: params.has('motion')
           ? params.get('motion') !== 'off'
           : !(saved && saved.options && saved.options.motion === false),
-        bg: params.get('bg') || (saved && saved.options && saved.options.bg) || ''
+        bg: params.get('bg') || (saved && saved.options && saved.options.bg) || '',
+        fit: params.get('bgFit') || (saved && saved.options && saved.options.fit) || 'cover',
+        pos: params.get('bgPos') || (saved && saved.options && saved.options.pos) || 'center',
+        blur: parseInt(params.get('bgBlur')) ||
+          (saved && saved.options && saved.options.blur) || 0,
+        gray: params.has('bgGray')
+          ? params.get('bgGray') === 'on'
+          : !!(saved && saved.options && saved.options.gray)
       };
+      // El velo no viaja en la URL cuando coincide con su valor automático, así
+      // que se reconstruye a partir del tipo de fondo. Si la URL trae `bg`
+      // manda ella entera: un scrim guardado sería de otro fondo distinto.
+      if (params.has('scrim')) {
+        opts.scrim = parseInt(params.get('scrim'));
+      } else if (!params.has('bg') && saved && saved.options &&
+                 typeof saved.options.scrim === 'number') {
+        opts.scrim = saved.options.scrim;
+      } else {
+        opts.scrim = defaultScrim(opts.bg);
+      }
 
       usernameInput.value = username;
       themeSelector.value = theme;
@@ -983,6 +1090,20 @@
       document.getElementById('lang-limit-value').textContent = opts.langLimit;
       document.getElementById('animated-bg').checked = opts.motion;
       document.getElementById('bg-url').value = opts.bg;
+      document.getElementById('bg-preset').value =
+        document.querySelector(`#bg-preset option[value="${CSS.escape(opts.bg)}"]`) ? opts.bg : '';
+      document.getElementById('bg-fit').value = opts.fit;
+      document.getElementById('bg-pos').value = opts.pos;
+      document.getElementById('bg-scrim').value = opts.scrim;
+      document.getElementById('bg-scrim-value').textContent = opts.scrim;
+      document.getElementById('bg-blur').value = opts.blur;
+      document.getElementById('bg-blur-value').textContent = opts.blur;
+      document.getElementById('bg-gray').checked = opts.gray;
+      if (/^#[0-9a-f]{6}$/i.test(opts.bg)) document.getElementById('bg-color').value = opts.bg;
+      updateBgWarning(opts.bg);
+      // Sin esto, el primer cambio de cualquier control pisaría el velo
+      // restaurado creyendo que el fondo acaba de pasar a ser una imagen.
+      bgWasImage = isImageBg(opts.bg);
       if (opts.includePrivate || opts.includeStreaks || opts.includeForks ||
           opts.langLimit !== 8 || !opts.motion || opts.bg) {
         toggleAdvancedOptions();
@@ -1025,12 +1146,48 @@
 
     // El fondo es puramente visual: no hace falta volver a pedir los datos a
     // GitHub, basta regenerar las cards con la caché que ya tenemos.
-    ['animated-bg', 'bg-url'].forEach((id) => {
-      document.getElementById(id).addEventListener('change', () => {
-        if (!currentUsername) return;
-        currentOptions = getOptions();
-        updateCardsWithTheme();
+    let bgWasImage = false;
+    function refreshBackground() {
+      const bg = document.getElementById('bg-url').value.trim();
+      updateBgWarning(bg);
+      // Cambiar entre imagen y color plano cambia el velo que tiene sentido:
+      // se ajusta solo, pero el usuario puede volver a moverlo después.
+      if (isImageBg(bg) !== bgWasImage) {
+        const scrim = defaultScrim(bg);
+        document.getElementById('bg-scrim').value = scrim;
+        document.getElementById('bg-scrim-value').textContent = scrim;
+      }
+      bgWasImage = isImageBg(bg);
+      if (!currentUsername) return;
+      currentOptions = getOptions();
+      updateCardsWithTheme();
+    }
+
+    ['animated-bg', 'bg-url', 'bg-fit', 'bg-pos', 'bg-scrim', 'bg-blur', 'bg-gray']
+      .forEach((id) => document.getElementById(id).addEventListener('change', refreshBackground));
+
+    // Los sliders solo re-renderizan al soltar (change), pero su número tiene
+    // que seguir al dedo (input).
+    [['bg-scrim', 'bg-scrim-value'], ['bg-blur', 'bg-blur-value']].forEach(([id, out]) => {
+      document.getElementById(id).addEventListener('input', (e) => {
+        document.getElementById(out).textContent = e.target.value;
       });
+    });
+
+    // El selector de presets y el color no son un segundo estado: escriben en
+    // el campo de fondo, que sigue siendo la única fuente de verdad.
+    function setBg(value) {
+      document.getElementById('bg-url').value = value;
+      refreshBackground();
+    }
+
+    document.getElementById('bg-preset').addEventListener('change', (e) => setBg(e.target.value));
+    document.getElementById('bg-color').addEventListener('change', (e) => {
+      document.getElementById('bg-preset').value = '';
+      setBg(e.target.value);
+    });
+    document.getElementById('bg-url').addEventListener('input', () => {
+      document.getElementById('bg-preset').value = '';
     });
 
     function toggleAdvancedOptions() {
@@ -1052,8 +1209,25 @@
         langLimit: parseInt(document.getElementById('lang-limit').value),
         includeForks: document.getElementById('include-forks').checked,
         motion: document.getElementById('animated-bg').checked,
-        bg: document.getElementById('bg-url').value.trim()
+        bg: document.getElementById('bg-url').value.trim(),
+        scrim: parseInt(document.getElementById('bg-scrim').value),
+        fit: document.getElementById('bg-fit').value,
+        pos: document.getElementById('bg-pos').value,
+        blur: parseInt(document.getElementById('bg-blur').value),
+        gray: document.getElementById('bg-gray').checked
       };
+    }
+
+    // El fallo del servidor es silencioso a propósito (una tarjeta rota en un
+    // README es peor que una sin fondo), así que el aviso tiene que darse aquí:
+    // el error real es pegar el enlace de la página en vez del de la imagen.
+    function updateBgWarning(bg) {
+      const el = document.getElementById('bg-warning');
+      const looksLikePage = /^https?:\/\//i.test(bg) && !/\.(png|jpe?g|gif|webp)(\?|#|$)/i.test(bg);
+      el.textContent = looksLikePage
+        ? '⚠ That URL does not look like a direct image link. Right-click the image → "Copy image address"; a link to the page that contains it will be ignored.'
+        : '';
+      el.style.display = looksLikePage ? 'block' : 'none';
     }
 
     function applyOptionsAndReload() {

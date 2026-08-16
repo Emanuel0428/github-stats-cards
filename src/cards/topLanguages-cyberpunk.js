@@ -33,7 +33,7 @@ export async function getTopLanguagesCard(username, preloadedLanguages = null, o
   const height = baseHeight + (limitedLanguages.length * heightPerLang) + bottomPadding;
 
   const bgx = await background('cyberpunk', {
-    width, height, bg: options.bg, motion: options.motion,
+    ...options, width, height,
     clip: 'clip-path="url(#blobClip2)"'
   });
 

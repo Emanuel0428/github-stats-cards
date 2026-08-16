@@ -1,5 +1,8 @@
 import dns from 'node:dns/promises';
 import net from 'node:net';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import axios from 'axios';
 
 // Las tarjetas se sirven como SVG dentro de un <img> (proxy camo de GitHub):
@@ -8,12 +11,28 @@ import axios from 'axios';
 // de meter una imagen del usuario es que el servidor la descargue y la inlinee
 // en base64. Este módulo hace las dos cosas.
 
-const MAX_BYTES = 500 * 1024;
+// 2 MB de imagen son ~2.7 MB de base64 dentro del SVG. Por encima de eso camo
+// empieza a tardar o a rendirse, así que este es el techo útil, no un límite
+// arbitrario.
+const MAX_BYTES = 2 * 1024 * 1024;
 const TIMEOUT_MS = 5000;
 
 // Solo raster: un SVG remoto inlineado sería un documento ajeno dentro del
 // nuestro, y no hay razón para aceptar ese riesgo por un fondo.
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+
+const EXT_TYPES = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp'
+};
+
+export const PRESET_DIR = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..', 'public', 'backgrounds'
+);
 
 // Color del velo que va sobre la imagen del usuario para que el texto de la
 // tarjeta siga siendo legible. Brutalist es el único con fondo claro.
@@ -24,6 +43,112 @@ const SCRIM = {
   vaporwave: '#241b3d',
   brutalist: '#ffffff'
 };
+
+// Fondos generados: no hay archivo detrás, se dibujan en SVG. `blobs` son
+// manchas radiales [color, cx%, cy%, r%] sobre `base`.
+const PRESETS = {
+  'mesh-neon': { base: '#0a0e27', blobs: [['#00f5ff', 15, 20, 70], ['#bd00ff', 85, 30, 65], ['#ff006e', 50, 95, 60]] },
+  'mesh-sunset': { base: '#1a0b2e', blobs: [['#ff71ce', 20, 15, 70], ['#ffb86c', 80, 25, 60], ['#01cdfe', 55, 100, 65]] },
+  'mesh-mint': { base: '#04231d', blobs: [['#00ff9d', 20, 25, 70], ['#00b3ff', 80, 20, 60], ['#0aff99', 50, 100, 55]] },
+  'mesh-ember': { base: '#1c0a00', blobs: [['#ff6b00', 25, 20, 70], ['#ffcc00', 80, 35, 55], ['#ff1e56', 50, 95, 60]] },
+  'grid-dark': { base: '#0d1117', grid: { size: 32, color: '#30363d' } },
+  'grid-light': { base: '#f6f8fa', grid: { size: 32, color: '#d0d7de' } },
+  'dots-dark': { base: '#0d1117', dots: { size: 18, color: '#30363d' } }
+};
+
+export const PRESET_NAMES = Object.keys(PRESETS);
+
+// ---------------------------------------------------------------- parámetros
+
+function normalizeColor(raw) {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(raw).trim());
+  return m ? `#${m[1]}` : null;
+}
+
+function clampNum(raw, lo, hi, dflt) {
+  const n = Number(raw);
+  return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : dflt;
+}
+
+/**
+ * `?bg=` no es solo una URL. Un único parámetro con dispatch por forma:
+ *
+ *   #0d1117 | 0d1117                  -> color sólido
+ *   linear:#ff71ce,#01cdfe[:135]      -> gradiente (ángulo CSS, opcional)
+ *   radial:#ff71ce,#01cdfe            -> gradiente radial
+ *   mesh-neon | grid-dark | ...       -> preset generado, sin archivo
+ *   preset:mi-loop                    -> archivo de src/public/backgrounds/
+ *   https://.../loop.gif              -> imagen o GIF remoto
+ *
+ * Devuelve null si no se reconoce: quien llame cae al fondo del tema.
+ */
+export function parseBg(raw) {
+  const v = String(raw ?? '').trim();
+  if (!v) return null;
+
+  if (/^https?:\/\//i.test(v)) return { kind: 'remote', url: v };
+
+  if (/^preset:/i.test(v)) {
+    const name = v.slice(7).trim();
+    // El nombre acaba en una ruta de disco: nada de barras, puntos ni `..`.
+    return /^[a-z0-9][a-z0-9_-]*$/i.test(name) ? { kind: 'file', name } : null;
+  }
+
+  const grad = /^(linear|radial):(.+)$/i.exec(v);
+  if (grad) {
+    const parts = grad[2].split(':');
+    const angle = parts.length > 1 ? clampNum(parts.pop(), 0, 360, 135) : 135;
+    const colors = parts.join(':').split(',').map(normalizeColor);
+    if (colors.length < 2 || colors.length > 5 || colors.some((c) => !c)) return null;
+    return { kind: grad[1].toLowerCase(), colors, angle };
+  }
+
+  const preset = PRESETS[v.toLowerCase()];
+  if (preset) return { kind: 'preset', name: v.toLowerCase() };
+
+  const solid = normalizeColor(v);
+  return solid ? { kind: 'solid', color: solid } : null;
+}
+
+// preserveAspectRatio es exactamente object-fit + object-position, pero nativo
+// en SVG: no hay lógica que escribir, solo una tabla.
+const ALIGN = {
+  center: 'xMidYMid',
+  top: 'xMidYMin',
+  bottom: 'xMidYMax',
+  left: 'xMinYMid',
+  right: 'xMaxYMid'
+};
+const MEET = { cover: 'slice', contain: 'meet' };
+
+function aspectRatio(fit, pos) {
+  if (fit === 'stretch') return 'none';
+  return `${ALIGN[pos] || 'xMidYMid'} ${MEET[fit] || 'slice'}`;
+}
+
+// ------------------------------------------------------------------- fuentes
+
+// Un GIF de 2 MB no puede volver a descargarse en cada render de cada tarjeta.
+// ponytail: Map con TTL y desalojo del más antiguo; si algún día hace falta
+// LRU real o caché compartida entre instancias, se cambia aquí.
+const CACHE_TTL_MS = 10 * 60 * 1000;
+const CACHE_MAX = 32;
+const cache = new Map();
+
+function cacheGet(key) {
+  const hit = cache.get(key);
+  if (!hit) return null;
+  if (Date.now() > hit.exp) {
+    cache.delete(key);
+    return null;
+  }
+  return hit.uri;
+}
+
+function cacheSet(key, uri) {
+  cache.set(key, { uri, exp: Date.now() + CACHE_TTL_MS });
+  if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value);
+}
 
 // Rangos que un fetch disparado por un parámetro de la URL no debe alcanzar
 // (SSRF): loopback, redes privadas, link-local, CGNAT, multicast y reservados.
@@ -46,6 +171,9 @@ export function isPrivateIp(ip) {
 // Descarga una imagen y la devuelve como data URI. Lanza si la URL no es
 // aceptable o la respuesta no es una imagen razonable.
 export async function fetchImageDataUri(rawUrl) {
+  const cached = cacheGet(rawUrl);
+  if (cached) return cached;
+
   const url = new URL(rawUrl);
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     throw new Error(`esquema no permitido: ${url.protocol}`);
@@ -61,19 +189,116 @@ export async function fetchImageDataUri(rawUrl) {
     timeout: TIMEOUT_MS,
     maxContentLength: MAX_BYTES,
     maxRedirects: 0, // un 302 no puede llevarnos a una red interna
-    headers: { Accept: 'image/*' }
+    // Sin User-Agent, bastantes hosts de imágenes (Wikimedia entre ellos)
+    // responden 403 y el fondo se caía sin explicación.
+    headers: { Accept: 'image/*', 'User-Agent': 'github-stats-cards/1.0 (+background fetch)' }
   });
 
   const type = String(res.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
   if (!ALLOWED_TYPES.includes(type)) {
-    throw new Error(`content-type no admitido: ${type || '(vacío)'}`);
+    throw new Error(`content-type no admitido: ${type || '(vacío)'} — ¿es un enlace a la imagen o a la página que la contiene?`);
   }
 
   const buf = Buffer.from(res.data);
   if (buf.length > MAX_BYTES) {
     throw new Error(`imagen de ${buf.length} bytes, máximo ${MAX_BYTES}`);
   }
-  return `data:${type};base64,${buf.toString('base64')}`;
+
+  const uri = `data:${type};base64,${buf.toString('base64')}`;
+  cacheSet(rawUrl, uri);
+  return uri;
+}
+
+// Preset alojado: sale de nuestro propio disco, así que no hay red, ni SSRF, ni
+// timeout que vigilar. Solo hay que impedir salirse del directorio.
+export async function readPresetDataUri(name) {
+  if (!/^[a-z0-9][a-z0-9_-]*$/i.test(name)) {
+    throw new Error(`nombre de preset no válido: ${name}`);
+  }
+  const key = `preset:${name}`;
+  const cached = cacheGet(key);
+  if (cached) return cached;
+
+  for (const [ext, type] of Object.entries(EXT_TYPES)) {
+    try {
+      const buf = await fs.readFile(path.join(PRESET_DIR, name + ext));
+      if (buf.length > MAX_BYTES) {
+        throw new Error(`preset ${name}${ext} de ${buf.length} bytes, máximo ${MAX_BYTES}`);
+      }
+      const uri = `data:${type};base64,${buf.toString('base64')}`;
+      cacheSet(key, uri);
+      return uri;
+    } catch (err) {
+      if (err.code !== 'ENOENT') throw err;
+    }
+  }
+  throw new Error(`preset no encontrado: ${name} (${Object.keys(EXT_TYPES).join(', ')})`);
+}
+
+// ------------------------------------------------------------------ pintado
+
+function gradientDefs(spec) {
+  const stops = spec.colors
+    .map((c, i) => `<stop offset="${Math.round((i / (spec.colors.length - 1)) * 100)}%" stop-color="${c}"/>`)
+    .join('');
+  if (spec.kind === 'radial') {
+    return `<radialGradient id="bgxFill" cx="50%" cy="50%" r="75%">${stops}</radialGradient>`;
+  }
+  // El gradiente base va de izquierda a derecha (= 90° en CSS), así que la
+  // rotación necesaria es el ángulo pedido menos 90.
+  return `<linearGradient id="bgxFill" x1="0" y1="0" x2="1" y2="0" gradientTransform="rotate(${spec.angle - 90} 0.5 0.5)">${stops}</linearGradient>`;
+}
+
+function presetLayers(spec, w, h, clip) {
+  const p = PRESETS[spec.name];
+  const px = (pct, total) => Math.round((pct / 100) * total);
+  let defs = '';
+  let layers = `\n      <rect x="0" y="0" width="${w}" height="${h}" fill="${p.base}" ${clip}/>`;
+
+  (p.blobs || []).forEach(([color, cx, cy, r], i) => {
+    const id = `bgxBlob${i}`;
+    defs += `
+      <radialGradient id="${id}">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.8"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+      </radialGradient>`;
+    layers += `
+      <ellipse cx="${px(cx, w)}" cy="${px(cy, h)}" rx="${px(r, w)}" ry="${px(r, h)}" fill="url(#${id})" ${clip}/>`;
+  });
+
+  if (p.grid) {
+    defs += `
+      <pattern id="bgxPresetGrid" width="${p.grid.size}" height="${p.grid.size}" patternUnits="userSpaceOnUse">
+        <path d="M ${p.grid.size} 0 H 0 V ${p.grid.size}" fill="none" stroke="${p.grid.color}" stroke-width="1"/>
+      </pattern>`;
+    layers += `
+      <rect x="0" y="0" width="${w}" height="${h}" fill="url(#bgxPresetGrid)" ${clip}/>`;
+  }
+
+  if (p.dots) {
+    defs += `
+      <pattern id="bgxPresetDots" width="${p.dots.size}" height="${p.dots.size}" patternUnits="userSpaceOnUse">
+        <circle cx="${p.dots.size / 2}" cy="${p.dots.size / 2}" r="1.5" fill="${p.dots.color}"/>
+      </pattern>`;
+    layers += `
+      <rect x="0" y="0" width="${w}" height="${h}" fill="url(#bgxPresetDots)" ${clip}/>`;
+  }
+
+  return { defs, layers };
+}
+
+// Desenfoque y blanco y negro sobre la imagen del usuario. El filtro se aplica
+// solo a la imagen: emborronar un gradiente plano no hace nada.
+function imageFilter(blur, gray) {
+  if (!blur && !gray) return { defs: '', attr: '' };
+  const prims =
+    (gray ? '<feColorMatrix type="saturate" values="0"/>' : '') +
+    (blur ? `<feGaussianBlur stdDeviation="${blur}"/>` : '');
+  return {
+    defs: `
+      <filter id="bgxFx" x="-25%" y="-25%" width="150%" height="150%">${prims}</filter>`,
+    attr: ' filter="url(#bgxFx)"'
+  };
 }
 
 // Capa animada de cada tema. Cada entrada devuelve { defs, layers }: defs se
@@ -210,35 +435,84 @@ const MOTION = {
 };
 
 /**
- * Fondo de tarjeta: capa animada propia del tema y, opcionalmente, una imagen
- * del usuario inlineada.
+ * Fondo de tarjeta: capa animada propia del tema y, opcionalmente, un fondo
+ * del usuario (color, gradiente, preset o imagen/GIF).
  *
  * Se inserta sin tocar el rect de fondo que ya tiene cada tarjeta, así que los
  * colores de cada tema siguen viniendo de su propio CSS.
  *
- * @param {string} theme        cyberpunk | terminal | luxury | vaporwave | brutalist
+ * @param {string} theme          cyberpunk | terminal | luxury | vaporwave | brutalist
  * @param {object} opts
  * @param {number} opts.width
  * @param {number} opts.height
- * @param {string} [opts.bg]    URL de imagen de fondo (se descarga e inlinea)
+ * @param {string} [opts.bg]      ver parseBg()
  * @param {boolean} [opts.motion=true]
- * @param {string} [opts.clip]  atributo clip-path completo, si la tarjeta recorta
+ * @param {number}  [opts.scrim]  opacidad 0-100 del velo (65 sobre imagen, 0 sobre color)
+ * @param {string}  [opts.scrimColor]
+ * @param {string}  [opts.fit]    cover | contain | stretch
+ * @param {string}  [opts.pos]    center | top | bottom | left | right
+ * @param {number}  [opts.blur]   0-20
+ * @param {boolean} [opts.gray]
+ * @param {string} [opts.clip]    atributo clip-path completo, si la tarjeta recorta
  * @returns {Promise<{defs: string, layers: string}>}
  */
-export async function background(theme, { width, height, bg, motion = true, clip = '' } = {}) {
-  const parts = { defs: '', layers: '' };
+export async function background(theme, opts = {}) {
+  const {
+    width, height, bg, motion = true,
+    scrim, scrimColor, fit, pos, blur, gray, clip = ''
+  } = opts;
 
-  if (bg) {
+  const parts = { defs: '', layers: '' };
+  const spec = parseBg(bg);
+
+  if (bg && !spec) {
+    console.warn(`[background] bg no reconocido, se ignora: ${bg}`);
+  }
+
+  if (spec) {
     try {
-      const dataUri = await fetchImageDataUri(bg);
-      const scrim = SCRIM[theme] || '#000000';
-      parts.layers += `
-      <image href="${dataUri}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice" ${clip}/>
-      <rect x="0" y="0" width="${width}" height="${height}" fill="${scrim}" opacity="0.65" ${clip}/>`;
+      // Sobre una foto el velo es necesario para leer el texto; sobre un color
+      // o un preset elegidos a propósito, estorba.
+      const isImage = spec.kind === 'remote' || spec.kind === 'file';
+      const veil = clampNum(scrim, 0, 100, isImage ? 65 : 0) / 100;
+
+      if (isImage) {
+        const dataUri = spec.kind === 'remote'
+          ? await fetchImageDataUri(spec.url)
+          : await readPresetDataUri(spec.name);
+
+        const b = clampNum(blur, 0, 20, 0);
+        const fx = imageFilter(b, Boolean(gray));
+        parts.defs += fx.defs;
+        // El desenfoque difumina también los bordes: se dibuja la imagen algo
+        // más grande que la tarjeta para que no asome el fondo por los lados.
+        const pad = b * 3;
+        parts.layers += `
+      <image href="${dataUri}" x="${-pad}" y="${-pad}" width="${width + pad * 2}" height="${height + pad * 2}" preserveAspectRatio="${aspectRatio(fit, pos)}"${fx.attr} ${clip}/>`;
+      } else if (spec.kind === 'solid') {
+        parts.layers += `
+      <rect x="0" y="0" width="${width}" height="${height}" fill="${spec.color}" ${clip}/>`;
+      } else if (spec.kind === 'preset') {
+        const p = presetLayers(spec, width, height, clip);
+        parts.defs += p.defs;
+        parts.layers += p.layers;
+      } else {
+        parts.defs += gradientDefs(spec);
+        parts.layers += `
+      <rect x="0" y="0" width="${width}" height="${height}" fill="url(#bgxFill)" ${clip}/>`;
+      }
+
+      if (veil > 0) {
+        const veilColor = normalizeColor(scrimColor) || SCRIM[theme] || '#000000';
+        parts.layers += `
+      <rect x="0" y="0" width="${width}" height="${height}" fill="${veilColor}" opacity="${veil}" ${clip}/>`;
+      }
     } catch (err) {
       // Un fondo inválido no puede romper la tarjeta: en un README quedaría un
       // <img> roto. Se cae al fondo del tema y se registra.
       console.warn(`[background] bg descartado (${bg}): ${err.message}`);
+      parts.defs = '';
+      parts.layers = '';
     }
   }
 

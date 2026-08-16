@@ -268,17 +268,38 @@ Every theme animates its own background — a drifting grid in Cyberpunk, CRT sc
 | Parameter | Values | Effect |
 | --- | --- | --- |
 | `motion` | `off` | Renders a completely static card |
-| `bg` | image URL | Uses your own image as the background |
+| `bg` | see below | Replaces the theme background |
+| `scrim` | `0`–`100` | Overlay opacity. Defaults to `65` over an image, `0` over a flat colour |
+| `scrimColor` | hex | Overlay colour. Defaults to the theme's own |
+| `bgFit` | `cover` `contain` `stretch` | How an image fills the card. Default `cover` |
+| `bgPos` | `center` `top` `bottom` `left` `right` | Which part survives the crop. Default `center` |
+| `bgBlur` | `0`–`20` | Blurs the image |
+| `bgGray` | `on` | Drops the image to greyscale |
+
+`bg` takes one of five forms:
+
+| Value | Background |
+| --- | --- |
+| `0d1117` | Flat colour (hex, no `#` — a literal `#` never reaches the server) |
+| `linear:ff71ce,01cdfe:135` | Gradient, 2–5 stops, CSS angle optional |
+| `radial:ff71ce,01cdfe` | Radial gradient |
+| `mesh-neon` | Generated preset: `mesh-neon` `mesh-sunset` `mesh-mint` `mesh-ember` `grid-dark` `grid-light` `dots-dark` |
+| `preset:my-loop` | A file you dropped in [`src/public/backgrounds/`](src/public/backgrounds/) |
+| `https://…/loop.gif` | Any public image or GIF |
 
 ```markdown
 ![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&motion=off)
-![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&bg=https://example.com/bg.png)
+![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&bg=mesh-neon)
+![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&bg=linear:ff71ce,01cdfe:135)
+![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&bg=https://example.com/loop.gif&bgBlur=6&scrim=75)
 ```
 
-`bg` accepts a public PNG, JPEG, GIF or WebP up to 500KB. The server downloads it and embeds it in the card, which is why it also works inside a README — a plain `<img>`-embedded SVG can't fetch anything itself. An overlay keeps the text readable. If the URL fails, the card falls back to its theme background instead of breaking.
+Remote images must be a public PNG, JPEG, GIF or WebP of **2MB or less**. The server downloads it and embeds it in the card, which is why it also works inside a README — a plain `<img>`-embedded SVG can't fetch anything itself. Animated GIFs keep looping. Downloads are cached for 10 minutes.
+
+If anything about `bg` fails — a dead link, a file that's too big, or a URL pointing at the *page* containing the image instead of the image itself — the card silently falls back to its theme background instead of breaking. Check the server logs if a background doesn't show up.
 
 > [!NOTE]
-> Video backgrounds aren't possible in a README: GitHub serves cards as images, and an SVG in that context can't play video or load anything external. Animated GIFs are embedded, but some browsers show only the first frame — use a still image for predictable results.
+> Video backgrounds aren't possible in a README: GitHub serves cards as images, and an SVG in that context can't play video or load anything external. An animated GIF is the closest thing, and it works.
 
 > [!TIP]
 > Visit the [live demo](https://github-stats-cards-six.vercel.app) to preview all themes with your username!

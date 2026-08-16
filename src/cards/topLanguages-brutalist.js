@@ -28,7 +28,7 @@ export async function getTopLanguagesBrutalistCard(username, preloadedLanguages 
   const height = 340;
 
   const bgx = await background('brutalist', {
-    width, height, bg: options.bg, motion: options.motion
+    ...options, width, height
   });
 
   let yOffset = 95;
