@@ -1067,6 +1067,43 @@
           </p>
         </div>
 
+        <!-- Card Colours -->
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(0, 245, 255, 0.2);">
+          <h3 style="font-family: 'Orbitron', monospace; color: var(--cyber-cyan); font-size: 14px; margin-bottom: 15px; letter-spacing: 2px;">CARD COLORS</h3>
+
+          <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7b8ea8;">
+            <input type="checkbox" id="text-halo" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--cyber-cyan);">
+            <span>Text Outline</span>
+          </label>
+          <p class="bgo-hint" style="margin-left: 28px;">
+            Draws the theme's background colour behind every glyph. This is what keeps a card readable over a sharp photo — turn the overlay down to 0% and use this instead.
+          </p>
+          <label class="bgo-label" for="halo-width" style="margin-top: 12px;">
+            Outline width: <span id="halo-width-value" style="color: var(--cyber-cyan);">4</span>
+            <input type="range" id="halo-width" class="bgo-input" min="1" max="10" value="4" style="margin-top: 12px;">
+          </label>
+
+          <label style="display: flex; align-items: center; gap: 10px; margin: 18px 0 4px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7b8ea8;">
+            <input type="checkbox" id="custom-colors" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--cyber-cyan);">
+            <span>Override Theme Colors</span>
+          </label>
+          <div class="bgo-grid" id="color-grid" style="display: none; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));">
+            <label class="bgo-label" for="color-title">Title
+              <input type="color" id="color-title" class="bgo-input" value="#00f5ff" style="margin-top: 5px;"></label>
+            <label class="bgo-label" for="color-text">Values
+              <input type="color" id="color-text" class="bgo-input" value="#ffffff" style="margin-top: 5px;"></label>
+            <label class="bgo-label" for="color-muted">Labels
+              <input type="color" id="color-muted" class="bgo-input" value="#7b8ea8" style="margin-top: 5px;"></label>
+            <label class="bgo-label" for="color-accent">Lines
+              <input type="color" id="color-accent" class="bgo-input" value="#00f5ff" style="margin-top: 5px;"></label>
+            <label class="bgo-label" for="color-icon">Icons
+              <input type="color" id="color-icon" class="bgo-input" value="#ffffff" style="margin-top: 5px;"></label>
+          </div>
+          <p class="bgo-hint">
+            Each colour is a separate URL parameter (<code>titleColor</code>, <code>textColor</code>, <code>mutedColor</code>, <code>accentColor</code>, <code>iconColor</code>), so you can also drop one into the markdown by hand and leave the rest on the theme.
+          </p>
+        </div>
+
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(0, 245, 255, 0.2); text-align: center;">
           <button onclick="applyOptionsAndReload()" style="padding: 12px 30px; background: linear-gradient(135deg, var(--cyber-cyan) 0%, var(--cyber-purple) 100%); color: var(--darker-bg); border: none; font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); transition: all 0.3s ease;">
             APPLY & RELOAD
@@ -1216,8 +1253,26 @@
       fit: 'cover',
       pos: 'center',
       blur: 0,
-      gray: false
+      gray: false,
+      halo: false,
+      haloWidth: 4,
+      colors: false,
+      titleColor: '#00f5ff',
+      textColor: '#ffffff',
+      mutedColor: '#7b8ea8',
+      accentColor: '#00f5ff',
+      iconColor: '#ffffff'
     };
+
+    // Los cinco roles de color, en el orden en que se ven en la tarjeta. Un
+    // solo sitio: control, parámetro de URL y estado se derivan de aquí.
+    const COLOR_ROLES = [
+      ['titleColor', 'color-title'],
+      ['textColor', 'color-text'],
+      ['mutedColor', 'color-muted'],
+      ['accentColor', 'color-accent'],
+      ['iconColor', 'color-icon']
+    ];
 
     // Una imagen necesita velo para que el texto se lea; un color o un preset
     // elegidos a propósito, no. Mismo criterio que background.js en el servidor.
@@ -1233,6 +1288,14 @@
     // las que se apartan del valor por defecto, para no ensuciar el markdown.
     function appendBgParams(params) {
       if (!currentOptions.motion) params.set('motion', 'off');
+      // Los colores no dependen del fondo: un tema se puede retocar tal cual.
+      if (currentOptions.halo) {
+        params.set('halo', 'on');
+        if (currentOptions.haloWidth !== 4) params.set('haloWidth', currentOptions.haloWidth);
+      }
+      if (currentOptions.colors) {
+        COLOR_ROLES.forEach(([key]) => params.set(key, currentOptions[key]));
+      }
       if (!currentOptions.bg) return params;
       params.set('bg', currentOptions.bg);
       if (currentOptions.scrim !== defaultScrim(currentOptions.bg)) {
@@ -1296,8 +1359,21 @@
           (saved && saved.options && saved.options.blur) || 0,
         gray: params.has('bgGray')
           ? params.get('bgGray') === 'on'
-          : !!(saved && saved.options && saved.options.gray)
+          : !!(saved && saved.options && saved.options.gray),
+        halo: params.has('halo')
+          ? params.get('halo') !== 'off'
+          : !!(saved && saved.options && saved.options.halo),
+        haloWidth: parseInt(params.get('haloWidth')) ||
+          (saved && saved.options && saved.options.haloWidth) || 4,
+        // Basta con que la URL traiga un color para que el modo esté activo:
+        // el resto se rellena con lo guardado o con el valor por defecto.
+        colors: COLOR_ROLES.some(([key]) => params.has(key)) ||
+          !!(saved && saved.options && saved.options.colors)
       };
+      COLOR_ROLES.forEach(([key]) => {
+        opts[key] = params.get(key) ||
+          (saved && saved.options && saved.options[key]) || currentOptions[key];
+      });
       // El velo no viaja en la URL cuando coincide con su valor automático, así
       // que se reconstruye a partir del tipo de fondo. Si la URL trae `bg`
       // manda ella entera: un scrim guardado sería de otro fondo distinto.
@@ -1328,13 +1404,23 @@
       document.getElementById('bg-blur').value = opts.blur;
       document.getElementById('bg-blur-value').textContent = opts.blur;
       document.getElementById('bg-gray').checked = opts.gray;
+      document.getElementById('text-halo').checked = opts.halo;
+      document.getElementById('halo-width').value = opts.haloWidth;
+      document.getElementById('halo-width-value').textContent = opts.haloWidth;
+      document.getElementById('custom-colors').checked = opts.colors;
+      COLOR_ROLES.forEach(([key, id]) => {
+        // El servidor acepta el hex con y sin `#`; <input type="color"> no.
+        const hex = /^#/.test(opts[key]) ? opts[key] : `#${opts[key]}`;
+        if (/^#[0-9a-f]{6}$/i.test(hex)) document.getElementById(id).value = hex;
+      });
+      toggleColorGrid();
       if (/^#[0-9a-f]{6}$/i.test(opts.bg)) document.getElementById('bg-color').value = opts.bg;
       updateBgWarning(opts.bg);
       // Sin esto, el primer cambio de cualquier control pisaría el velo
       // restaurado creyendo que el fondo acaba de pasar a ser una imagen.
       bgWasImage = isImageBg(opts.bg);
       if (opts.includePrivate || opts.includeStreaks || opts.includeForks ||
-          opts.langLimit !== 8 || !opts.motion || opts.bg) {
+          opts.langLimit !== 8 || !opts.motion || opts.bg || opts.halo || opts.colors) {
         toggleAdvancedOptions();
       }
       return username;
@@ -1390,12 +1476,22 @@
       updateCardsWithTheme();
     }
 
-    ['animated-bg', 'bg-url', 'bg-fit', 'bg-pos', 'bg-scrim', 'bg-blur', 'bg-gray']
+    // Los colores solo se envían con el interruptor puesto: sin él, la rejilla
+    // sobra en pantalla y sus valores sobran en el markdown.
+    function toggleColorGrid() {
+      document.getElementById('color-grid').style.display =
+        document.getElementById('custom-colors').checked ? 'grid' : 'none';
+    }
+    document.getElementById('custom-colors').addEventListener('change', toggleColorGrid);
+
+    ['animated-bg', 'bg-url', 'bg-fit', 'bg-pos', 'bg-scrim', 'bg-blur', 'bg-gray',
+     'text-halo', 'halo-width', 'custom-colors', ...COLOR_ROLES.map(([, id]) => id)]
       .forEach((id) => document.getElementById(id).addEventListener('change', refreshBackground));
 
     // Los sliders solo re-renderizan al soltar (change), pero su número tiene
     // que seguir al dedo (input).
-    [['bg-scrim', 'bg-scrim-value'], ['bg-blur', 'bg-blur-value']].forEach(([id, out]) => {
+    [['bg-scrim', 'bg-scrim-value'], ['bg-blur', 'bg-blur-value'],
+     ['halo-width', 'halo-width-value']].forEach(([id, out]) => {
       document.getElementById(id).addEventListener('input', (e) => {
         document.getElementById(out).textContent = e.target.value;
       });
@@ -1430,7 +1526,13 @@
     }
 
     function getOptions() {
+      const colors = {};
+      COLOR_ROLES.forEach(([key, id]) => { colors[key] = document.getElementById(id).value; });
       return {
+        ...colors,
+        halo: document.getElementById('text-halo').checked,
+        haloWidth: parseInt(document.getElementById('halo-width').value),
+        colors: document.getElementById('custom-colors').checked,
         includePrivate: document.getElementById('include-private').checked,
         includeStreaks: document.getElementById('include-streaks').checked,
         langLimit: parseInt(document.getElementById('lang-limit').value),

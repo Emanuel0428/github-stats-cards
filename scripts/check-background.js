@@ -5,6 +5,7 @@ import {
   background, fetchImageDataUri, isPrivateIp,
   parseBg, readPresetDataUri, PRESET_NAMES, PRESET_DIR
 } from '../src/cards/background.js';
+import { palette } from '../src/cards/palette.js';
 import { getStatsCard } from '../src/cards/stats-cyberpunk.js';
 import { getTopLanguagesCard } from '../src/cards/topLanguages-cyberpunk.js';
 import { getStatsBrutalistCard } from '../src/cards/stats-brutalist.js';
@@ -195,6 +196,35 @@ async function main() {
     assert.equal(off.layers, '', `${theme}: motion:false sigue emitiendo layers`);
   }
   ok('motion:false no emite nada');
+
+  console.log('\nColores sobre el tema (palette)');
+  assert.equal(palette({}), '', 'sin parámetros no debe emitir CSS');
+  assert.equal(palette({ titleColor: 'javascript:alert(1)', halo: 'rojo' }), '',
+    'lo que no es un hex se ignora entero');
+  ok('sin parámetros, o con basura, no toca la tarjeta');
+
+  const css = palette({
+    titleColor: 'f0f', textColor: '#ffffff', mutedColor: '#cccccc',
+    accentColor: '#ff0000', iconColor: '#00ff00'
+  });
+  assert.match(css, /\.title \{ fill: #f0f; \}/);
+  assert.match(css, /\.accent-line[^{]*\{ stroke: #ff0000; \}/, 'las líneas se pintan con stroke, no fill');
+  assert.match(css, /g\[transform\] path \{ fill: #00ff00; \}/);
+  ok('cada rol pinta sus selectores, con fill o stroke según el elemento');
+
+  assert.match(palette({ halo: 'on' }, '#0c0c0c'), /paint-order: stroke; stroke: #0c0c0c/);
+  assert.match(palette({ halo: '#123456', haloWidth: '999' }), /stroke-width: 12px/, 'el ancho se acota');
+  ok('halo: color del tema con `on`, hex propio, y ancho acotado');
+
+  // El halo tiene que ganarle al <style> del tema, y para eso su regla va
+  // después. Es toda la razón de que esto viaje dentro de bgx.defs.
+  const haloed = await getStatsTerminalCard('u', FAKE_STATS, { motion: false, halo: 'on', titleColor: '#ff00ff' });
+  assert.ok(
+    haloed.indexOf('paint-order: stroke') > haloed.lastIndexOf('font-family'),
+    'el CSS de palette debe ir detrás del <style> del tema'
+  );
+  assert.match(haloed, /\.title \{ fill: #ff00ff; \}/);
+  ok('en la tarjeta real, las reglas caen detrás de las del tema');
 
   console.log('\nFail-open del parámetro bg');
   const bad = await background('cyberpunk', {

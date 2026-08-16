@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import axios from 'axios';
+import { palette, normalizeColor, clampNum } from './palette.js';
 
 // Las tarjetas se sirven como SVG dentro de un <img> (proxy camo de GitHub):
 // no hay JS, ni fetch del navegador, ni <video>. El único movimiento que
@@ -59,16 +60,6 @@ const PRESETS = {
 export const PRESET_NAMES = Object.keys(PRESETS);
 
 // ---------------------------------------------------------------- parámetros
-
-function normalizeColor(raw) {
-  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(raw).trim());
-  return m ? `#${m[1]}` : null;
-}
-
-function clampNum(raw, lo, hi, dflt) {
-  const n = Number(raw);
-  return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : dflt;
-}
 
 /**
  * `?bg=` no es solo una URL. Un único parámetro con dispatch por forma:
@@ -454,6 +445,8 @@ const MOTION = {
  * @param {number}  [opts.blur]   0-20
  * @param {boolean} [opts.gray]
  * @param {string} [opts.clip]    atributo clip-path completo, si la tarjeta recorta
+ * @param {...*}   [opts]         los colores de palette.js (titleColor, textColor,
+ *                                mutedColor, accentColor, iconColor, halo, haloWidth)
  * @returns {Promise<{defs: string, layers: string}>}
  */
 export async function background(theme, opts = {}) {
@@ -521,6 +514,12 @@ export async function background(theme, opts = {}) {
     parts.defs += m.defs;
     parts.layers += m.layers;
   }
+
+  // El retoque de colores viaja con el fondo porque el sitio donde las tarjetas
+  // interpolan estos defs —justo detrás de su <style>— es exactamente donde una
+  // regla tiene que caer para pisar la del tema. El halo por defecto es el
+  // color del velo del tema: el que contrasta con su texto.
+  parts.defs += palette(opts, SCRIM[theme]);
 
   return parts;
 }

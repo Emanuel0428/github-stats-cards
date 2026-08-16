@@ -33,7 +33,16 @@ function backgroundOptions(req) {
     fit: q.bgFit,
     pos: q.bgPos,
     blur: q.bgBlur,
-    gray: q.bgGray === 'on' || q.bgGray === '1' || q.bgGray === 'true'
+    gray: q.bgGray === 'on' || q.bgGray === '1' || q.bgGray === 'true',
+    // Colores del tema: opcionales, se validan en palette.js. Lo que no sea un
+    // hex se ignora y esa parte se queda con el color del tema.
+    titleColor: q.titleColor,
+    textColor: q.textColor,
+    mutedColor: q.mutedColor,
+    accentColor: q.accentColor,
+    iconColor: q.iconColor,
+    halo: q.halo,
+    haloWidth: q.haloWidth
   };
 }
 

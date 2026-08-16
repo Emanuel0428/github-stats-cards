@@ -60,6 +60,9 @@ Two endpoints, `/stats` and `/top-languages`. Both take `username` (required) an
 | `bgPos` | `center` `top` `bottom` `left` `right` | `center` | Which part survives the crop |
 | `bgBlur` | `0`–`20` | `0` | Blurs the image |
 | `bgGray` | `on` | off | Drops the image to greyscale |
+| `halo` | `on` or hex | off | Outlines the text so it reads over a sharp photo |
+| `haloWidth` | `0`–`12` | `4` | Outline thickness |
+| `titleColor` `textColor` `mutedColor` `accentColor` `iconColor` | hex | the theme's own | Recolours one part of the card |
 
 Set `includeStreaks` on both cards if you show them side by side — it's what makes them the same height.
 
@@ -79,6 +82,19 @@ Set `includeStreaks` on both cards if you show them side by side — it's what m
 ```markdown
 ![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&bg=mesh-neon)
 ![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&bg=https://example.com/loop.gif&bgBlur=6&scrim=75)
+```
+
+### Colours over a background
+
+A theme's colours are picked for that theme's own background, so a photo behind them usually breaks the contrast. Two ways out, and they combine:
+
+- `scrim` — the overlay. Free legibility, at the cost of muting the image.
+- `halo=on` — outlines every glyph in the theme's background colour. Keeps the image sharp, `scrim=0` and all. `haloWidth` tunes it.
+
+If that still isn't the look, recolour the parts directly: `titleColor` (the username), `textColor` (numbers, rank, language names), `mutedColor` (labels and percentages), `accentColor` (lines, borders and frames), `iconColor`. Each is independent — set one and the rest stay on the theme.
+
+```markdown
+![GitHub Stats](https://github-stats-cards-six.vercel.app/stats?username=YOUR_USERNAME&bg=https://example.com/wall.jpg&scrim=0&halo=on&titleColor=ffcc00)
 ```
 
 Remote images must be a public PNG, JPEG, GIF or WebP of 2MB or less. The server downloads it and embeds it in the card, which is why it works inside a README — a plain `<img>`-embedded SVG can't fetch anything itself. Animated GIFs keep looping. Downloads are cached for 10 minutes.
