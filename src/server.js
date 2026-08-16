@@ -20,6 +20,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Opciones de fondo comunes a /stats y /top-languages. La animación viene
+// activada; `motion=off` la desactiva.
+function backgroundOptions(req) {
+  return {
+    bg: req.query.bg,
+    motion: req.query.motion !== 'off'
+  };
+}
+
 // Servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -104,22 +113,24 @@ app.get('/stats', async (req, res) => {
       });
     }
 
+    const bgOptions = backgroundOptions(req);
+
     let svg;
     switch(theme) {
       case 'brutalist':
-        svg = await getStatsBrutalistCard(username, stats);
+        svg = await getStatsBrutalistCard(username, stats, bgOptions);
         break;
       case 'terminal':
-        svg = await getStatsTerminalCard(username, stats);
+        svg = await getStatsTerminalCard(username, stats, bgOptions);
         break;
       case 'luxury':
-        svg = await getStatsLuxuryCard(username, stats);
+        svg = await getStatsLuxuryCard(username, stats, bgOptions);
         break;
       case 'vaporwave':
-        svg = await getStatsVaporwaveCard(username, stats);
+        svg = await getStatsVaporwaveCard(username, stats, bgOptions);
         break;
       default:
-        svg = await getStatsCard(username, stats);
+        svg = await getStatsCard(username, stats, bgOptions);
     }
     
     res.setHeader('Content-Type', 'image/svg+xml');
@@ -158,22 +169,24 @@ app.get('/top-languages', async (req, res) => {
       });
     }
 
+    const bgOptions = backgroundOptions(req);
+
     let svg;
     switch(theme) {
       case 'brutalist':
-        svg = await getTopLanguagesBrutalistCard(username, languages);
+        svg = await getTopLanguagesBrutalistCard(username, languages, bgOptions);
         break;
       case 'terminal':
-        svg = await getTopLanguagesTerminalCard(username, languages);
+        svg = await getTopLanguagesTerminalCard(username, languages, bgOptions);
         break;
       case 'luxury':
-        svg = await getTopLanguagesLuxuryCard(username, languages);
+        svg = await getTopLanguagesLuxuryCard(username, languages, bgOptions);
         break;
       case 'vaporwave':
-        svg = await getTopLanguagesVaporwaveCard(username, languages);
+        svg = await getTopLanguagesVaporwaveCard(username, languages, bgOptions);
         break;
       default:
-        svg = await getTopLanguagesCard(username, languages);
+        svg = await getTopLanguagesCard(username, languages, bgOptions);
     }
     
     res.setHeader('Content-Type', 'image/svg+xml');

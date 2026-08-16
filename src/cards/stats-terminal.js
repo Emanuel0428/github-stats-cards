@@ -1,13 +1,18 @@
 import { getUserStats } from '../utils/github.js';
 import { calculateRank } from '../utils/rank.js';
+import { background } from './background.js';
 
-export async function getStatsTerminalCard(username, preloadedStats = null) {
+export async function getStatsTerminalCard(username, preloadedStats = null, options = {}) {
   const stats = preloadedStats || await getUserStats(username);
   const rank = calculateRank(stats.stars, stats.commits, stats.prs, stats.issues);
 
   const width = 520;
   const includeStreaks = stats.streaks !== undefined;
   const height = includeStreaks ? 340 : 280;
+
+  const bgx = await background('terminal', {
+    width, height, bg: options.bg, motion: options.motion
+  });
 
   // Construir las estadísticas dinámicamente
   let statsHTML = '';
@@ -113,10 +118,12 @@ export async function getStatsTerminalCard(username, preloadedStats = null) {
             text-anchor: middle;
           }
         </style>
+        ${bgx.defs}
       </defs>
 
       <!-- Background -->
       <rect class="card-bg" x="0" y="0" width="${width}" height="${height}"/>
+      ${bgx.layers}
 
       <!-- Terminal prompt -->
       <text class="terminal-prompt" x="20" y="30">user@github:~$</text>

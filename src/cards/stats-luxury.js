@@ -1,13 +1,18 @@
 import { getUserStats } from '../utils/github.js';
 import { calculateRank } from '../utils/rank.js';
+import { background } from './background.js';
 
-export async function getStatsLuxuryCard(username, preloadedStats = null) {
+export async function getStatsLuxuryCard(username, preloadedStats = null, options = {}) {
   const stats = preloadedStats || await getUserStats(username);
   const rank = calculateRank(stats.stars, stats.commits, stats.prs, stats.issues);
 
   const width = 520;
   const includeStreaks = stats.streaks !== undefined;
   const height = includeStreaks ? 340 : 280;
+
+  const bgx = await background('luxury', {
+    width, height, bg: options.bg, motion: options.motion
+  });
 
   // Construir las estadísticas dinámicamente
   let statsHTML = '';
@@ -117,11 +122,13 @@ export async function getStatsLuxuryCard(username, preloadedStats = null) {
             text-anchor: middle;
           }
         </style>
+        ${bgx.defs}
       </defs>
 
       <!-- Background -->
       <rect class="card-bg" x="0" y="0" width="${width}" height="${height}"/>
-      
+      ${bgx.layers}
+
       <!-- Luxury borders -->
       <rect class="luxury-border" x="20" y="20" width="${width-40}" height="${height-40}"/>
       <rect class="luxury-border" x="24" y="24" width="${width-48}" height="${height-48}"/>

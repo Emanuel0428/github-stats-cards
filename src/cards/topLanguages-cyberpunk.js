@@ -1,4 +1,5 @@
 import { getTopLanguages } from '../utils/github.js';
+import { background } from './background.js';
 
 const languageColors = {
   JavaScript: '#f7df1e',
@@ -18,7 +19,7 @@ const languageColors = {
   SQL: '#e38c00',
 };
 
-export async function getTopLanguagesCard(username, preloadedLanguages = null) {
+export async function getTopLanguagesCard(username, preloadedLanguages = null, options = {}) {
   const languages = preloadedLanguages || await getTopLanguages(username);
   
   // Adaptar altura según cantidad de lenguajes
@@ -30,6 +31,11 @@ export async function getTopLanguagesCard(username, preloadedLanguages = null) {
   const heightPerLang = 35;
   const bottomPadding = 40; // Padding inferior para mejor distribución
   const height = baseHeight + (limitedLanguages.length * heightPerLang) + bottomPadding;
+
+  const bgx = await background('cyberpunk', {
+    width, height, bg: options.bg, motion: options.motion,
+    clip: 'clip-path="url(#blobClip2)"'
+  });
 
   let yOffset = 85;
   let barsHTML = '';
@@ -150,10 +156,12 @@ export async function getTopLanguagesCard(username, preloadedLanguages = null) {
             opacity: 0.8;
           }
         </style>
+        ${bgx.defs}
       </defs>
 
       <!-- Background -->
       <rect class="card-bg" x="0" y="0" width="${width}" height="${height}" clip-path="url(#blobClip2)"/>
+      ${bgx.layers}
       <rect class="noise-layer" x="0" y="0" width="${width}" height="${height}" filter="url(#noise)" clip-path="url(#blobClip2)"/>
 
       <!-- Corner accents -->

@@ -1,4 +1,5 @@
 import { getTopLanguages } from '../utils/github.js';
+import { background } from './background.js';
 
 const languageColors = {
   JavaScript: '#f7df1e',
@@ -18,13 +19,17 @@ const languageColors = {
   SQL: '#e38c00',
 };
 
-export async function getTopLanguagesLuxuryCard(username, preloadedLanguages = null) {
+export async function getTopLanguagesLuxuryCard(username, preloadedLanguages = null, options = {}) {
   const languages = preloadedLanguages || await getTopLanguages(username);
   
   const limitedLanguages = languages.slice(0, 6);
 
   const width = 520;
   const height = 340;
+
+  const bgx = await background('luxury', {
+    width, height, bg: options.bg, motion: options.motion
+  });
 
   let yOffset = 105;
   let barsHTML = '';
@@ -87,11 +92,13 @@ export async function getTopLanguagesLuxuryCard(username, preloadedLanguages = n
             fill: #d4af37;
           }
         </style>
+        ${bgx.defs}
       </defs>
 
       <!-- Background -->
       <rect class="card-bg" x="0" y="0" width="${width}" height="${height}"/>
-      
+      ${bgx.layers}
+
       <!-- Luxury borders -->
       <rect class="luxury-border" x="20" y="20" width="${width-40}" height="${height-40}"/>
       <rect class="luxury-border" x="24" y="24" width="${width-48}" height="${height-48}"/>

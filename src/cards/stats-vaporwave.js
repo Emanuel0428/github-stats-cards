@@ -1,13 +1,18 @@
 import { getUserStats } from '../utils/github.js';
 import { calculateRank } from '../utils/rank.js';
+import { background } from './background.js';
 
-export async function getStatsVaporwaveCard(username, preloadedStats = null) {
+export async function getStatsVaporwaveCard(username, preloadedStats = null, options = {}) {
   const stats = preloadedStats || await getUserStats(username);
   const rank = calculateRank(stats.stars, stats.commits, stats.prs, stats.issues);
 
   const width = 520;
   const includeStreaks = stats.streaks !== undefined;
   const height = includeStreaks ? 340 : 280;
+
+  const bgx = await background('vaporwave', {
+    width, height, bg: options.bg, motion: options.motion
+  });
 
   // Construir las estadísticas dinámicamente
   let statsHTML = '';
@@ -75,13 +80,8 @@ export async function getStatsVaporwaveCard(username, preloadedStats = null) {
           <stop offset="100%" style="stop-color:#b967ff;stop-opacity:1" />
         </linearGradient>
         
-        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#05ffa1" stroke-width="0.5" opacity="0.3"/>
-        </pattern>
-        
         <style>
           .card-bg { fill: url(#vaporBg); }
-          .grid-bg { fill: url(#grid); }
           
           .title { 
             font-family: 'Impact', 'Arial Black', sans-serif; 
@@ -116,11 +116,12 @@ export async function getStatsVaporwaveCard(username, preloadedStats = null) {
             text-anchor: middle;
           }
         </style>
+        ${bgx.defs}
       </defs>
 
       <!-- Background -->
       <rect class="card-bg" x="0" y="0" width="${width}" height="${height}"/>
-      <rect class="grid-bg" x="0" y="0" width="${width}" height="${height}"/>
+      ${bgx.layers}
 
       <!-- Title section -->
       <text class="title" x="30" y="50">${username}</text>

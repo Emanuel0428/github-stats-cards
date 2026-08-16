@@ -773,6 +773,27 @@
           </div>
         </div>
 
+        <!-- Background Options -->
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(0, 245, 255, 0.2);">
+          <h3 style="font-family: 'Orbitron', monospace; color: var(--cyber-cyan); font-size: 14px; margin-bottom: 15px; letter-spacing: 2px;">BACKGROUND OPTIONS</h3>
+
+          <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7b8ea8;">
+            <input type="checkbox" id="animated-bg" checked style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--cyber-cyan);">
+            <span>Animated Background</span>
+          </label>
+          <p style="margin: 0 0 16px 28px; font-size: 10px; line-height: 1.4; color: #5a6a85;">
+            Each theme animates differently. Viewers with "reduce motion" enabled always see a still card.
+          </p>
+
+          <label style="display: block; margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7b8ea8;">
+            <span style="display: block; margin-bottom: 5px;">Background Image URL</span>
+            <input type="url" id="bg-url" placeholder="https://example.com/my-background.png" style="width: 100%; padding: 10px 12px; border: 1px solid rgba(0, 245, 255, 0.2); background: rgba(26, 31, 58, 0.6); color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none;">
+          </label>
+          <p style="margin: 0; font-size: 10px; line-height: 1.4; color: #5a6a85;">
+            PNG, JPEG, GIF or WebP up to 500KB, from a public URL. The image is embedded in the card so it also works inside a README. A dark overlay keeps the text readable. Animated GIFs may show only their first frame in some browsers.
+          </p>
+        </div>
+
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(0, 245, 255, 0.2); text-align: center;">
           <button onclick="applyOptionsAndReload()" style="padding: 12px 30px; background: linear-gradient(135deg, var(--cyber-cyan) 0%, var(--cyber-purple) 100%); color: var(--darker-bg); border: none; font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); transition: all 0.3s ease;">
             APPLY & RELOAD
@@ -896,8 +917,18 @@
       includePrivate: false,
       includeStreaks: false,
       langLimit: 8,
-      includeForks: false
+      includeForks: false,
+      motion: true,
+      bg: ''
     };
+
+    // Único sitio donde se decide qué opciones de fondo viajan en la URL: lo
+    // comparten el deep-link, el markdown que se copia y la preview.
+    function appendBgParams(params) {
+      if (!currentOptions.motion) params.set('motion', 'off');
+      if (currentOptions.bg) params.set('bg', currentOptions.bg);
+      return params;
+    }
 
     // Sincroniza usuario/tema/opciones en la URL (deep-link compartible) y en
     // localStorage (para recordar la última consulta al volver).
@@ -907,6 +938,7 @@
       if (currentOptions.includeStreaks) params.set('includeStreaks', 'true');
       if (currentOptions.includeForks) params.set('includeForks', 'true');
       if (currentOptions.langLimit !== 8) params.set('langLimit', currentOptions.langLimit);
+      appendBgParams(params);
       history.replaceState(null, '', `?${params.toString()}`);
       try {
         localStorage.setItem('gsc:state', JSON.stringify({
@@ -935,7 +967,11 @@
           ? params.get('includeForks') === 'true'
           : !!(saved && saved.options && saved.options.includeForks),
         langLimit: parseInt(params.get('langLimit')) ||
-          (saved && saved.options && saved.options.langLimit) || 8
+          (saved && saved.options && saved.options.langLimit) || 8,
+        motion: params.has('motion')
+          ? params.get('motion') !== 'off'
+          : !(saved && saved.options && saved.options.motion === false),
+        bg: params.get('bg') || (saved && saved.options && saved.options.bg) || ''
       };
 
       usernameInput.value = username;
@@ -945,7 +981,10 @@
       document.getElementById('include-forks').checked = opts.includeForks;
       document.getElementById('lang-limit').value = opts.langLimit;
       document.getElementById('lang-limit-value').textContent = opts.langLimit;
-      if (opts.includePrivate || opts.includeStreaks || opts.includeForks || opts.langLimit !== 8) {
+      document.getElementById('animated-bg').checked = opts.motion;
+      document.getElementById('bg-url').value = opts.bg;
+      if (opts.includePrivate || opts.includeStreaks || opts.includeForks ||
+          opts.langLimit !== 8 || !opts.motion || opts.bg) {
         toggleAdvancedOptions();
       }
       return username;
@@ -984,6 +1023,16 @@
       });
     });
 
+    // El fondo es puramente visual: no hace falta volver a pedir los datos a
+    // GitHub, basta regenerar las cards con la caché que ya tenemos.
+    ['animated-bg', 'bg-url'].forEach((id) => {
+      document.getElementById(id).addEventListener('change', () => {
+        if (!currentUsername) return;
+        currentOptions = getOptions();
+        updateCardsWithTheme();
+      });
+    });
+
     function toggleAdvancedOptions() {
       const panel = document.getElementById('advanced-options');
       const toggleText = document.getElementById('toggle-text');
@@ -1001,7 +1050,9 @@
         includePrivate: document.getElementById('include-private').checked,
         includeStreaks: document.getElementById('include-streaks').checked,
         langLimit: parseInt(document.getElementById('lang-limit').value),
-        includeForks: document.getElementById('include-forks').checked
+        includeForks: document.getElementById('include-forks').checked,
+        motion: document.getElementById('animated-bg').checked,
+        bg: document.getElementById('bg-url').value.trim()
       };
     }
 
@@ -1037,6 +1088,7 @@
       if (endpoint === 'top-languages' && currentOptions.langLimit !== 8) {
         params.set('langLimit', currentOptions.langLimit);
       }
+      appendBgParams(params);
       return `${window.location.origin}/${endpoint}?${params.toString()}`;
     }
 
@@ -1079,12 +1131,17 @@
       const statsCard = document.getElementById('stats-card');
       const languagesCard = document.getElementById('languages-card');
 
-      // Codificar los datos para pasarlos como parámetro
-      const statsData = encodeURIComponent(JSON.stringify(cachedUserData.stats));
-      const languagesData = encodeURIComponent(JSON.stringify(cachedUserData.languages));
+      // Datos pre-cargados como parámetro, más las opciones de fondo, para que
+      // la preview coincida exactamente con lo que se copia al README.
+      const previewQuery = (data) => appendBgParams(new URLSearchParams({
+        username: currentUsername,
+        theme,
+        data: JSON.stringify(data),
+        t: Date.now()
+      })).toString();
 
-      statsCard.src = `/stats?username=${encodeURIComponent(currentUsername)}&theme=${theme}&data=${statsData}&t=${Date.now()}`;
-      languagesCard.src = `/top-languages?username=${encodeURIComponent(currentUsername)}&theme=${theme}&data=${languagesData}&t=${Date.now()}`;
+      statsCard.src = `/stats?${previewQuery(cachedUserData.stats)}`;
+      languagesCard.src = `/top-languages?${previewQuery(cachedUserData.languages)}`;
 
       let loadedCount = 0;
       const onLoad = () => {

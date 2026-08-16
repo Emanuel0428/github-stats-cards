@@ -1,4 +1,5 @@
 import { getTopLanguages } from '../utils/github.js';
+import { background } from './background.js';
 
 const languageColors = {
   JavaScript: '#f7df1e',
@@ -18,13 +19,17 @@ const languageColors = {
   SQL: '#e38c00',
 };
 
-export async function getTopLanguagesBrutalistCard(username, preloadedLanguages = null) {
+export async function getTopLanguagesBrutalistCard(username, preloadedLanguages = null, options = {}) {
   const languages = preloadedLanguages || await getTopLanguages(username);
   
   const limitedLanguages = languages.slice(0, 7);
 
   const width = 520;
   const height = 340;
+
+  const bgx = await background('brutalist', {
+    width, height, bg: options.bg, motion: options.motion
+  });
 
   let yOffset = 95;
   let barsHTML = '';
@@ -82,11 +87,13 @@ export async function getTopLanguagesBrutalistCard(username, preloadedLanguages 
             stroke-width: 8;
           }
         </style>
+        ${bgx.defs}
       </defs>
 
       <!-- Background -->
       <rect class="card-bg" x="0" y="0" width="${width}" height="${height}"/>
-      
+      ${bgx.layers}
+
       <!-- Heavy border -->
       <rect class="heavy-border" x="4" y="4" width="${width-8}" height="${height-8}" rx="0"/>
 

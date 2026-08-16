@@ -1,4 +1,5 @@
 import { getTopLanguages } from '../utils/github.js';
+import { background } from './background.js';
 
 const languageColors = {
   JavaScript: '#00ff00',
@@ -18,13 +19,17 @@ const languageColors = {
   SQL: '#00ff00',
 };
 
-export async function getTopLanguagesTerminalCard(username, preloadedLanguages = null) {
+export async function getTopLanguagesTerminalCard(username, preloadedLanguages = null, options = {}) {
   const languages = preloadedLanguages || await getTopLanguages(username);
   
   const limitedLanguages = languages.slice(0, 7);
 
   const width = 520;
   const height = 340;
+
+  const bgx = await background('terminal', {
+    width, height, bg: options.bg, motion: options.motion
+  });
 
   let yOffset = 105;
   let barsHTML = '';
@@ -91,10 +96,12 @@ export async function getTopLanguagesTerminalCard(username, preloadedLanguages =
             50%, 100% { opacity: 0; }
           }
         </style>
+        ${bgx.defs}
       </defs>
 
       <!-- Background -->
       <rect class="card-bg" x="0" y="0" width="${width}" height="${height}"/>
+      ${bgx.layers}
 
       <!-- Terminal prompt -->
       <text class="terminal-prompt" x="20" y="30">user@github:~$</text>

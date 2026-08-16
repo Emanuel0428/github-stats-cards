@@ -1,13 +1,18 @@
 import { getUserStats } from '../utils/github.js';
 import { calculateRank } from '../utils/rank.js';
+import { background } from './background.js';
 
-export async function getStatsBrutalistCard(username, preloadedStats = null) {
+export async function getStatsBrutalistCard(username, preloadedStats = null, options = {}) {
   const stats = preloadedStats || await getUserStats(username);
   const rank = calculateRank(stats.stars, stats.commits, stats.prs, stats.issues);
 
   const width = 520;
   const includeStreaks = stats.streaks !== undefined;
   const height = includeStreaks ? 340 : 280;
+
+  const bgx = await background('brutalist', {
+    width, height, bg: options.bg, motion: options.motion
+  });
 
   // Construir las estadísticas dinámicamente
   let statsHTML = '';
@@ -117,11 +122,13 @@ export async function getStatsBrutalistCard(username, preloadedStats = null) {
             stroke-width: 6;
           }
         </style>
+        ${bgx.defs}
       </defs>
 
       <!-- Background -->
       <rect class="card-bg" x="0" y="0" width="${width}" height="${height}"/>
-      
+      ${bgx.layers}
+
       <!-- Heavy border -->
       <rect class="heavy-border" x="4" y="4" width="${width-8}" height="${height-8}" rx="0"/>
 
