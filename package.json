@@ -8,7 +8,9 @@
         "start": "node src/server.js",
         "dev": "node src/server.js",
         "check-token": "node scripts/check-token.js",
-        "check-background": "node scripts/check-background.js"
+        "check-background": "node scripts/check-background.js",
+        "check-page": "node scripts/check-page.js",
+        "check": "npm run check-background && npm run check-page"
     },
     "dependencies": {
         "axios": "^1.10.0",

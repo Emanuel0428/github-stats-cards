@@ -1,5 +1,6 @@
 import { getTopLanguages } from '../utils/github.js';
 import { background } from './background.js';
+import { langLayout } from './layout.js';
 
 const languageColors = {
   JavaScript: '#fffb96',
@@ -22,23 +23,22 @@ const languageColors = {
 export async function getTopLanguagesVaporwaveCard(username, preloadedLanguages = null, options = {}) {
   const languages = preloadedLanguages || await getTopLanguages(username);
   
-  const limitedLanguages = languages.slice(0, 7);
-
   const width = 520;
-  const height = 340;
+  const yOffset = 105;
+  const { height, step, rows } = langLayout(Math.min(languages.length, 7), yOffset, options.includeStreaks);
+  const limitedLanguages = languages.slice(0, rows);
 
   const bgx = await background('vaporwave', {
     ...options, width, height
   });
 
-  let yOffset = 105;
   let barsHTML = '';
 
   limitedLanguages.forEach((lang, index) => {
     const percentage = (lang.count / limitedLanguages[0].count) * 100;
     const barWidth = (percentage / 100) * 240;
     const color = languageColors[lang.language] || '#05ffa1';
-    const y = yOffset + index * 35;
+    const y = yOffset + index * step;
 
     barsHTML += `
       <text class="lang-name" x="45" y="${y + 7}">${lang.language}</text>

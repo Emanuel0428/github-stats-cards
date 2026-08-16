@@ -249,7 +249,7 @@
     }
 
     .header h1::before {
-      content: 'GITHUB STATS';
+      content: 'GITHUB STATS CARDS';
       position: absolute;
       left: 2px;
       top: 0;
@@ -657,61 +657,268 @@
     .card-wrapper {
       cursor: pointer;
     }
+
+    /* ---------------------------------------------- secciones de la landing */
+
+    .section-head {
+      font-family: 'Orbitron', monospace;
+      color: var(--cyber-cyan);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .section-head::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      background: var(--cyber-cyan);
+      box-shadow: 0 0 10px var(--cyber-cyan);
+      flex: none;
+    }
+
+    .demo-note {
+      color: #7b8ea8;
+      font-size: 12px;
+      letter-spacing: 1px;
+      margin-bottom: 18px;
+    }
+
+    .demo-note strong {
+      color: var(--cyber-cyan);
+      font-weight: 400;
+    }
+
+    /* El marco de README: las tarjetas se ven dentro del sitio donde acabarán,
+       así que la pregunta "¿cómo queda esto en mi perfil?" se responde sola. */
+    .readme {
+      margin-bottom: 25px;
+    }
+
+    .readme-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 22px 9px 16px;
+      background: rgba(0, 245, 255, 0.1);
+      border: 1px solid rgba(0, 245, 255, 0.25);
+      border-bottom: none;
+      color: var(--cyber-cyan);
+      font-size: 11px;
+      letter-spacing: 2px;
+      clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+    }
+
+    .readme-tab::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--cyber-cyan);
+      box-shadow: 0 0 8px var(--cyber-cyan);
+      animation: pulse 2s ease infinite;
+    }
+
+    .readme-body {
+      padding: 30px;
+      border: 1px solid rgba(0, 245, 255, 0.25);
+      background: rgba(10, 14, 39, 0.5);
+    }
+
+    /* El markdown exacto que se pega. Antes se copiaba a ciegas: el botón
+       existía pero el texto no se veía nunca. */
+    .snippet {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      border: 1px solid rgba(0, 245, 255, 0.25);
+      background: rgba(5, 8, 20, 0.8);
+    }
+
+    .snippet pre {
+      flex: 1;
+      min-width: 0;
+      overflow-x: auto;
+      padding: 16px 18px;
+      margin: 0;
+      color: #9fb3c8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.9;
+      white-space: pre;
+    }
+
+    .snippet-copy {
+      flex: none;
+      padding: 0 24px;
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.15) 0%, rgba(123, 47, 247, 0.15) 100%);
+      border: none;
+      border-left: 1px solid rgba(0, 245, 255, 0.25);
+      color: var(--cyber-cyan);
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .snippet-copy:hover {
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.35) 0%, rgba(123, 47, 247, 0.35) 100%);
+    }
+
+    .snippet-copy.copied {
+      background: rgba(0, 245, 100, 0.25);
+      color: #00f564;
+    }
+
+    /* Galería de temas: cinco tarjetas de verdad. Sustituye a cinco párrafos
+       que describían con palabras algo que la imagen dice mejor. */
+    .themes {
+      margin-top: 70px;
+    }
+
+    .themes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+    }
+
+    .theme-card {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background: rgba(26, 31, 58, 0.5);
+      border: 1px solid rgba(0, 245, 255, 0.15);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+      text-align: left;
+      font-family: inherit;
+    }
+
+    .theme-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .theme-card span {
+      display: block;
+      margin-top: 10px;
+      color: #7b8ea8;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: color 0.3s ease;
+    }
+
+    .theme-card:hover {
+      border-color: rgba(0, 245, 255, 0.5);
+      transform: translateY(-4px);
+    }
+
+    .theme-card:hover span {
+      color: var(--cyber-cyan);
+    }
+
+    .theme-card[aria-pressed="true"] {
+      border-color: var(--cyber-cyan);
+      box-shadow: 0 0 25px rgba(0, 245, 255, 0.25);
+    }
+
+    .theme-card[aria-pressed="true"] span {
+      color: var(--cyber-cyan);
+    }
+
+    /* FAQ plegada: el marcado schema.org sigue igual, solo deja de ocupar
+       media pantalla de texto que nadie lee. */
+    .faq {
+      margin-top: 70px;
+    }
+
+    .faq details {
+      border-bottom: 1px solid rgba(0, 245, 255, 0.12);
+    }
+
+    .faq summary {
+      padding: 18px 30px 18px 0;
+      color: #cfd9e4;
+      font-size: 13px;
+      cursor: pointer;
+      list-style: none;
+      position: relative;
+      transition: color 0.2s ease;
+    }
+
+    .faq summary::-webkit-details-marker { display: none; }
+
+    .faq summary::after {
+      content: '+';
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--cyber-cyan);
+      font-size: 18px;
+    }
+
+    .faq details[open] summary::after { content: '−'; }
+
+    .faq summary:hover { color: var(--cyber-cyan); }
+
+    .faq details p {
+      padding: 0 30px 20px 0;
+      color: #7b8ea8;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    /* Suelo de calidad: foco visible con teclado y respeto por reduce-motion,
+       que esta página no tenía pese a animarlo casi todo. */
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    summary:focus-visible {
+      outline: 2px solid var(--cyber-cyan);
+      outline-offset: 3px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, body::before, body::after {
+        animation: none !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .readme-body { padding: 16px; }
+      .snippet { flex-direction: column; }
+      .snippet-copy {
+        border-left: none;
+        border-top: 1px solid rgba(0, 245, 255, 0.25);
+        padding: 14px;
+      }
+      .themes, .faq { margin-top: 50px; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <!-- SEO-friendly header with semantic HTML -->
     <header class="header" role="banner">
-      <h1>GitHub Stats Cards Generator - Beautiful Themes for Your Profile</h1>
-      <p class="subtitle">Generate stunning GitHub statistics cards with 5 unique visual themes: Cyberpunk, Brutalist, Terminal, Luxury, and Vaporwave</p>
-      <div class="terminal-line">Free • Fast • No Signup Required • Open Source</div>
+      <h1>GitHub Stats Cards</h1>
+      <p class="subtitle">Five themes for your profile README. Pick one, copy one line of markdown.</p>
+      <div class="terminal-line">free · no signup · open source</div>
     </header>
 
-    <!-- SEO Content Section (visible to search engines) -->
-    <section class="seo-content" style="padding: 20px 0; color: #7b8ea8; font-size: 14px; line-height: 1.8; max-width: 900px; margin: 0 auto 40px;">
-      <h2 style="font-family: 'Orbitron', monospace; color: var(--cyber-cyan); font-size: 18px; margin-bottom: 15px; letter-spacing: 2px;">Why Choose GitHub Stats Cards?</h2>
-      <p style="margin-bottom: 15px;">
-        Enhance your GitHub profile README with beautiful, customizable stats cards. Unlike generic alternatives, our tool offers 5 completely unique themes designed by developers, for developers. Each theme provides a distinct visual identity - from neon cyberpunk aesthetics to minimalist brutalist design.
-      </p>
-      <ul style="list-style: none; padding: 0; margin: 20px 0;">
-        <li style="margin-bottom: 10px;">✨ <strong>5 Unique Themes:</strong> Cyberpunk, Brutalist, Terminal, Luxury, Vaporwave</li>
-        <li style="margin-bottom: 10px;">⚡ <strong>Real-time Stats:</strong> Live data from GitHub API with smart caching</li>
-        <li style="margin-bottom: 10px;">🎨 <strong>Easy Integration:</strong> Simple markdown syntax for instant use</li>
-        <li style="margin-bottom: 10px;">🚀 <strong>Performance Optimized:</strong> Fast SVG generation with 1-hour cache</li>
-        <li style="margin-bottom: 10px;">🔓 <strong>No Authentication:</strong> Just enter your username and go</li>
-        <li style="margin-bottom: 10px;">💯 <strong>100% Free:</strong> Open source under MIT License</li>
-      </ul>
-    </section>
-
     <div class="search-container">
-      <!-- Theme Showcase Section for SEO -->
-      <section class="themes-showcase" style="margin-bottom: 40px; padding: 30px; background: linear-gradient(135deg, rgba(0, 245, 255, 0.05) 0%, rgba(123, 47, 247, 0.05) 100%); border: 1px solid rgba(0, 245, 255, 0.2); clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">
-        <h2 style="font-family: 'Orbitron', monospace; color: var(--cyber-cyan); font-size: 16px; margin-bottom: 20px; letter-spacing: 2px; text-align: center;">AVAILABLE THEMES</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; color: #7b8ea8; font-size: 13px;">
-          <div>
-            <strong style="color: var(--cyber-cyan);">Cyberpunk</strong>
-            <p style="margin: 5px 0 0 0;">Neon futuristic aesthetic with glow effects and vibrant colors</p>
-          </div>
-          <div>
-            <strong style="color: var(--cyber-cyan);">Brutalist</strong>
-            <p style="margin: 5px 0 0 0;">Raw minimalist design with bold typography and stark contrast</p>
-          </div>
-          <div>
-            <strong style="color: var(--cyber-cyan);">Terminal</strong>
-            <p style="margin: 5px 0 0 0;">Retro terminal style with green-on-black classic look</p>
-          </div>
-          <div>
-            <strong style="color: var(--cyber-cyan);">Luxury</strong>
-            <p style="margin: 5px 0 0 0;">Refined elegance with gold accents and premium feel</p>
-          </div>
-          <div>
-            <strong style="color: var(--cyber-cyan);">Vaporwave</strong>
-            <p style="margin: 5px 0 0 0;">Retro 80s/90s aesthetic with pastel gradients and grid patterns</p>
-          </div>
-        </div>
-      </section>
-
       <div class="search-box">
         <input 
           type="text" 
@@ -870,101 +1077,116 @@
 
     <div id="error-container"></div>
 
-    <div class="cards-container" id="cards-container" style="display: none;">
-      <div class="card-wrapper" onclick="copyMarkdown('stats')">
-        <div class="card-inner">
-          <h2>STATISTICS MODULE</h2>
-          <button class="copy-btn" id="copy-stats" onclick="event.stopPropagation(); copyMarkdown('stats')">COPY MD</button>
-          <img id="stats-card" src="" alt="Stats Card">
+    <p class="demo-note" id="demo-note" style="display: none;">
+      Showing <strong id="demo-user"></strong> as an example. Enter your username above to see yours.
+    </p>
+
+    <div class="readme">
+      <div class="readme-tab">README.md</div>
+      <div class="readme-body">
+        <div class="cards-container" id="cards-container" style="display: none;">
+          <div class="card-wrapper" onclick="copyMarkdown('stats')">
+            <div class="card-inner">
+              <h2>STATISTICS MODULE</h2>
+              <button class="copy-btn" id="copy-stats" onclick="event.stopPropagation(); copyMarkdown('stats')">COPY MD</button>
+              <img id="stats-card" src="" alt="Stats Card">
+            </div>
+          </div>
+
+          <div class="card-wrapper" onclick="copyMarkdown('languages')">
+            <div class="card-inner">
+              <h2>LANGUAGE ANALYSIS</h2>
+              <button class="copy-btn" id="copy-languages" onclick="event.stopPropagation(); copyMarkdown('languages')">COPY MD</button>
+              <img id="languages-card" src="" alt="Languages Card">
+            </div>
+          </div>
+        </div>
+
+        <div class="loading" id="loading" style="display: none;">
+          <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner"></div>
+          </div>
+          <p>LOADING DATA...</p>
         </div>
       </div>
-
-      <div class="card-wrapper" onclick="copyMarkdown('languages')">
-        <div class="card-inner">
-          <h2>LANGUAGE ANALYSIS</h2>
-          <button class="copy-btn" id="copy-languages" onclick="event.stopPropagation(); copyMarkdown('languages')">COPY MD</button>
-          <img id="languages-card" src="" alt="Languages Card">
-        </div>
-      </div>
     </div>
 
-    <div class="loading" id="loading" style="display: none;">
-      <div class="spinner-container">
-        <div class="spinner"></div>
-        <div class="spinner"></div>
-      </div>
-      <p>LOADING DATA...</p>
+    <div class="snippet">
+      <pre id="md-snippet"></pre>
+      <button class="snippet-copy" id="copy-both" onclick="copyMarkdown('both')">Copy</button>
     </div>
 
-    <div class="info" id="info" style="display: none;">
-      ⚡ ENTER A GITHUB USERNAME TO VISUALIZE STATISTICS
-    </div>
+    <section class="themes">
+      <h2 class="section-head">Themes</h2>
+      <div class="themes-grid" id="themes-grid"></div>
+    </section>
 
-    <!-- FAQ Section with Schema.org markup -->
-    <section class="faq-section" style="margin-top: 60px; padding: 40px 30px; background: linear-gradient(135deg, rgba(0, 245, 255, 0.05) 0%, rgba(123, 47, 247, 0.05) 100%); border: 1px solid rgba(0, 245, 255, 0.2); clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">
-      <h2 style="font-family: 'Orbitron', monospace; color: var(--cyber-cyan); font-size: 20px; margin-bottom: 30px; letter-spacing: 2px; text-align: center;">FREQUENTLY ASKED QUESTIONS</h2>
-      
+    <!-- FAQ. El marcado schema.org va idéntico; solo cambia que se pliega. -->
+    <section class="faq">
+      <h2 class="section-head">Questions</h2>
+
       <div itemscope itemtype="https://schema.org/FAQPage">
-        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 25px;">
-          <h3 itemprop="name" style="font-family: 'Orbitron', monospace; color: var(--cyber-cyan); font-size: 14px; margin-bottom: 10px; letter-spacing: 1px;">How do I add GitHub stats cards to my profile?</h3>
-          <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-            <p itemprop="text" style="color: #7b8ea8; font-size: 13px; line-height: 1.6;">Simply enter your GitHub username, select a theme, click "Execute" to preview, then click "Copy MD" to copy the markdown code. Paste it into your GitHub profile README.md file and commit the changes.</p>
-          </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <details>
+            <summary itemprop="name">How do I add GitHub stats cards to my profile?</summary>
+            <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+              <p itemprop="text">Simply enter your GitHub username, select a theme, click "Execute" to preview, then click "Copy MD" to copy the markdown code. Paste it into your GitHub profile README.md file and commit the changes.</p>
+            </div>
+          </details>
         </div>
 
-        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 25px;">
-          <h3 itemprop="name" style="font-family: 'Orbitron', monospace; color: var(--cyber-cyan); font-size: 14px; margin-bottom: 10px; letter-spacing: 1px;">Do I need a GitHub token or authentication?</h3>
-          <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-            <p itemprop="text" style="color: #7b8ea8; font-size: 13px; line-height: 1.6;">No! You don't need to sign up, authenticate, or provide any tokens. Just enter your GitHub username and the tool handles everything automatically.</p>
-          </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <details>
+            <summary itemprop="name">Do I need a GitHub token or authentication?</summary>
+            <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+              <p itemprop="text">No! You don't need to sign up, authenticate, or provide any tokens. Just enter your GitHub username and the tool handles everything automatically.</p>
+            </div>
+          </details>
         </div>
 
-        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 25px;">
-          <h3 itemprop="name" style="font-family: 'Orbitron', monospace; color: var(--cyber-cyan); font-size: 14px; margin-bottom: 10px; letter-spacing: 1px;">How often do the stats update?</h3>
-          <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-            <p itemprop="text" style="color: #7b8ea8; font-size: 13px; line-height: 1.6;">Stats are cached for 1 hour for optimal performance. After 1 hour, the cards automatically fetch fresh data from GitHub's API when viewed.</p>
-          </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <details>
+            <summary itemprop="name">How often do the stats update?</summary>
+            <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+              <p itemprop="text">Stats are cached for 1 hour for optimal performance. After 1 hour, the cards automatically fetch fresh data from GitHub's API when viewed.</p>
+            </div>
+          </details>
         </div>
 
-        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 25px;">
-          <h3 itemprop="name" style="font-family: 'Orbitron', monospace; color: var(--cyber-cyan); font-size: 14px; margin-bottom: 10px; letter-spacing: 1px;">Can I use different themes for stats and languages cards?</h3>
-          <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-            <p itemprop="text" style="color: #7b8ea8; font-size: 13px; line-height: 1.6;">Yes! You can mix and match themes. For example, use Cyberpunk for your stats card and Luxury for your languages card to create a unique profile look.</p>
-          </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <details>
+            <summary itemprop="name">Can I use different themes for stats and languages cards?</summary>
+            <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+              <p itemprop="text">Yes! You can mix and match themes. For example, use Cyberpunk for your stats card and Luxury for your languages card to create a unique profile look.</p>
+            </div>
+          </details>
         </div>
 
-        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 25px;">
-          <h3 itemprop="name" style="font-family: 'Orbitron', monospace; color: var(--cyber-cyan); font-size: 14px; margin-bottom: 10px; letter-spacing: 1px;">Is this tool free to use?</h3>
-          <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-            <p itemprop="text" style="color: #7b8ea8; font-size: 13px; line-height: 1.6;">Yes, completely free! This is an open-source project under MIT License. You can use it for personal or commercial purposes without any restrictions.</p>
-          </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <details>
+            <summary itemprop="name">Is this tool free to use?</summary>
+            <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+              <p itemprop="text">Yes, completely free! This is an open-source project under MIT License. You can use it for personal or commercial purposes without any restrictions.</p>
+            </div>
+          </details>
         </div>
 
-        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 25px;">
-          <h3 itemprop="name" style="font-family: 'Orbitron', monospace; color: var(--cyber-cyan); font-size: 14px; margin-bottom: 10px; letter-spacing: 1px;">What makes this different from github-readme-stats?</h3>
-          <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-            <p itemprop="text" style="color: #7b8ea8; font-size: 13px; line-height: 1.6;">While github-readme-stats is excellent, our tool focuses on unique, artistic themes with completely different visual identities. Each theme (Cyberpunk, Brutalist, Terminal, Luxury, Vaporwave) offers a distinct aesthetic that stands out from traditional stat cards.</p>
-          </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <details>
+            <summary itemprop="name">What makes this different from github-readme-stats?</summary>
+            <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+              <p itemprop="text">While github-readme-stats is excellent, our tool focuses on unique, artistic themes with completely different visual identities. Each theme (Cyberpunk, Brutalist, Terminal, Luxury, Vaporwave) offers a distinct aesthetic that stands out from traditional stat cards.</p>
+            </div>
+          </details>
         </div>
       </div>
     </section>
 
-    <!-- Footer with additional SEO content -->
-    <footer style="margin-top: 60px; padding: 30px 0; text-align: center; border-top: 1px solid rgba(0, 245, 255, 0.2);">
-      <p style="color: #7b8ea8; font-size: 12px; margin-bottom: 15px;">
-        <strong style="color: var(--cyber-cyan);">GitHub Stats Cards Generator</strong> - Free tool for developers to create beautiful GitHub profile cards
-      </p>
-      <p style="color: #7b8ea8; font-size: 11px; margin-bottom: 10px;">
-        <a href="https://github.com/Emanuel0428/github-stats-cards" style="color: var(--cyber-cyan); text-decoration: none; margin: 0 10px;" target="_blank" rel="noopener">GitHub Repository</a> |
-        <a href="/docs" style="color: var(--cyber-cyan); text-decoration: none; margin: 0 10px;">Documentation</a> |
-        <a href="/faq" style="color: var(--cyber-cyan); text-decoration: none; margin: 0 10px;">FAQ</a> |
-        <a href="/examples" style="color: var(--cyber-cyan); text-decoration: none; margin: 0 10px;">Examples</a>
-      </p>
-      <p style="color: #7b8ea8; font-size: 11px;">
-        Keywords: github stats, github readme, stats card generator, github profile, readme generator, developer tools
-      </p>
-      <p style="color: #7b8ea8; font-size: 10px; margin-top: 15px;">
-        © 2026 GitHub Stats Cards. Open Source under MIT License.
+    <footer style="margin-top: 70px; padding: 25px 0; text-align: center; border-top: 1px solid rgba(0, 245, 255, 0.15);">
+      <p style="color: #7b8ea8; font-size: 11px; letter-spacing: 1px;">
+        <a href="https://github.com/Emanuel0428/github-stats-cards" style="color: var(--cyber-cyan); text-decoration: none;" target="_blank" rel="noopener">Source on GitHub</a>
+        <span style="opacity: 0.4; margin: 0 12px;">·</span>MIT
       </p>
     </footer>
   </div>
@@ -975,7 +1197,11 @@
     const cardsContainer = document.getElementById('cards-container');
     const loadingDiv = document.getElementById('loading');
     const errorContainer = document.getElementById('error-container');
-    const infoDiv = document.getElementById('info');
+    // Sin usuario, la página abría con un cartel pidiendo uno sobre un hueco
+    // vacío: nunca se veía el producto. Ahora arranca con una demo real.
+    const DEMO_USER = 'Emanuel0428';
+    const THEMES = ['cyberpunk', 'brutalist', 'terminal', 'luxury', 'vaporwave'];
+    let isDemo = false;
     let currentUsername = '';
     let currentTheme = 'cyberpunk';
     let cachedUserData = null; // Caché de datos del usuario
@@ -1022,6 +1248,9 @@
     // Sincroniza usuario/tema/opciones en la URL (deep-link compartible) y en
     // localStorage (para recordar la última consulta al volver).
     function persistState() {
+      // La demo no se guarda: sería mentirle al visitante en su próxima visita
+      // diciéndole que ese usuario es el suyo.
+      if (isDemo) return;
       const params = new URLSearchParams({ username: currentUsername, theme: currentTheme });
       if (currentOptions.includePrivate) params.set('includePrivate', 'true');
       if (currentOptions.includeStreaks) params.set('includeStreaks', 'true');
@@ -1113,11 +1342,9 @@
 
     window.addEventListener('load', () => {
       const username = restoreState();
-      if (username) {
-        searchUser();
-      } else {
-        infoDiv.style.display = 'block';
-      }
+      buildThemeGallery();
+      isDemo = !username;
+      searchUser(username || DEMO_USER);
     });
 
     usernameInput.addEventListener('keypress', (e) => {
@@ -1240,6 +1467,35 @@
       searchUser();
     }
 
+    // Cinco tarjetas de verdad en vez de cinco párrafos describiéndolas. Van
+    // sin animar y con loading="lazy": no se piden hasta que bajas hasta ellas.
+    function buildThemeGallery() {
+      const grid = document.getElementById('themes-grid');
+      grid.innerHTML = THEMES.map((t) => `
+        <button type="button" class="theme-card" data-theme="${t}" aria-pressed="false">
+          <img src="/stats?username=${DEMO_USER}&theme=${t}&motion=off"
+               alt="${t} theme example" loading="lazy" width="520" height="280">
+          <span>${t}</span>
+        </button>`).join('');
+
+      grid.querySelectorAll('.theme-card').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          themeSelector.value = btn.dataset.theme;
+          updateCardsWithTheme();
+          document.querySelector('.readme').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+      });
+      markActiveTheme();
+    }
+
+    // Se compara contra el selector y no contra currentTheme: al restaurar
+    // estado el selector ya tiene el tema bueno y currentTheme todavía no.
+    function markActiveTheme() {
+      document.querySelectorAll('.theme-card').forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(btn.dataset.theme === themeSelector.value));
+      });
+    }
+
     function showError(message) {
       errorContainer.innerHTML = `
         <div class="error">
@@ -1266,18 +1522,26 @@
       return `${window.location.origin}/${endpoint}?${params.toString()}`;
     }
 
+    // El markdown que se copia, escrito a la vista. Antes el botón existía pero
+    // el texto no se veía nunca, así que se copiaba a ciegas.
+    function markdownFor(type) {
+      if (type === 'stats') return `![GitHub Stats](${buildCardUrl('stats')})`;
+      if (type === 'languages') return `![Top Languages](${buildCardUrl('top-languages')})`;
+      return `${markdownFor('stats')}\n${markdownFor('languages')}`;
+    }
+
+    function updateSnippet() {
+      if (!currentUsername) return;
+      document.getElementById('md-snippet').textContent = markdownFor('both');
+    }
+
     function copyMarkdown(type) {
       if (!currentUsername) return;
 
-      let markdown = '';
-      if (type === 'stats') {
-        markdown = `![GitHub Stats](${buildCardUrl('stats')})`;
-      } else if (type === 'languages') {
-        markdown = `![Top Languages](${buildCardUrl('top-languages')})`;
-      }
+      const markdown = markdownFor(type);
 
       navigator.clipboard.writeText(markdown).then(() => {
-        const btn = document.getElementById(`copy-${type}`);
+        const btn = document.getElementById(type === 'both' ? 'copy-both' : `copy-${type}`);
         const originalText = btn.textContent;
         btn.textContent = '✓ COPIED';
         btn.classList.add('copied');
@@ -1295,6 +1559,8 @@
       const theme = themeSelector.value;
       currentTheme = theme;
       persistState();
+      updateSnippet();
+      markActiveTheme();
 
       if (!cachedUserData) return;
 
@@ -1307,12 +1573,17 @@
 
       // Datos pre-cargados como parámetro, más las opciones de fondo, para que
       // la preview coincida exactamente con lo que se copia al README.
-      const previewQuery = (data) => appendBgParams(new URLSearchParams({
-        username: currentUsername,
-        theme,
-        data: JSON.stringify(data),
-        t: Date.now()
-      })).toString();
+      const previewQuery = (data) => {
+        const params = new URLSearchParams({
+          username: currentUsername,
+          theme,
+          data: JSON.stringify(data),
+          t: Date.now()
+        });
+        // La card de lenguajes lo necesita para medir igual que la de stats.
+        if (currentOptions.includeStreaks) params.set('includeStreaks', 'true');
+        return appendBgParams(params).toString();
+      };
 
       statsCard.src = `/stats?${previewQuery(cachedUserData.stats)}`;
       languagesCard.src = `/top-languages?${previewQuery(cachedUserData.languages)}`;
@@ -1338,14 +1609,23 @@
       languagesCard.onerror = onError;
     }
 
-    async function searchUser() {
-      const username = usernameInput.value.trim();
+    // `override` solo lo usa la demo inicial: el input se queda vacío con su
+    // placeholder para que se vea que hay que escribir algo ahí.
+    async function searchUser(override) {
+      // Con la demo puesta el input está vacío a propósito, así que tocar una
+      // opción avanzada llegaría aquí sin usuario: se recae en el de la demo.
+      const username = (override || usernameInput.value.trim() || (isDemo ? currentUsername : '')).trim();
       const theme = themeSelector.value;
 
       if (!username) {
         showError('⚠️ ERROR: USERNAME REQUIRED');
         return;
       }
+
+      if (!override) isDemo = false;
+      const demoNote = document.getElementById('demo-note');
+      document.getElementById('demo-user').textContent = '@' + DEMO_USER;
+      demoNote.style.display = isDemo ? 'block' : 'none';
 
       // Obtener opciones actuales
       const options = getOptions();
@@ -1364,7 +1644,6 @@
       cachedUserData = null; // Limpiar caché al cambiar de usuario o opciones
       persistState();
       errorContainer.innerHTML = '';
-      infoDiv.style.display = 'none';
       cardsContainer.style.display = 'none';
       loadingDiv.style.display = 'block';
 

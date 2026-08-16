@@ -1,5 +1,6 @@
 import { getTopLanguages } from '../utils/github.js';
 import { background } from './background.js';
+import { langLayout } from './layout.js';
 
 const languageColors = {
   JavaScript: '#f7df1e',
@@ -22,29 +23,23 @@ const languageColors = {
 export async function getTopLanguagesCard(username, preloadedLanguages = null, options = {}) {
   const languages = preloadedLanguages || await getTopLanguages(username);
   
-  // Adaptar altura según cantidad de lenguajes
-  const langCount = languages.length;
-  const limitedLanguages = languages.slice(0, Math.min(langCount, 15));
-
   const width = 520;
-  const baseHeight = 120;
-  const heightPerLang = 35;
-  const bottomPadding = 40; // Padding inferior para mejor distribución
-  const height = baseHeight + (limitedLanguages.length * heightPerLang) + bottomPadding;
+  const yOffset = 85;
+  const { height, step, rows } = langLayout(Math.min(languages.length, 15), yOffset, options.includeStreaks);
+  const limitedLanguages = languages.slice(0, rows);
 
   const bgx = await background('cyberpunk', {
     ...options, width, height,
     clip: 'clip-path="url(#blobClip2)"'
   });
 
-  let yOffset = 85;
   let barsHTML = '';
 
   limitedLanguages.forEach((lang, index) => {
     const percentage = (lang.count / limitedLanguages[0].count) * 100;
     const barWidth = (percentage / 100) * 240;
     const color = languageColors[lang.language] || '#00f5ff';
-    const y = yOffset + index * heightPerLang;
+    const y = yOffset + index * step;
 
     // Crear forma orgánica para cada barra
     const waveOffset = Math.sin(index * 0.5) * 2;

@@ -177,7 +177,12 @@ app.get('/top-languages', async (req, res) => {
       });
     }
 
-    const bgOptions = backgroundOptions(req);
+    // includeStreaks no cambia los datos de esta tarjeta, solo su alto: es lo
+    // que hace que mida igual que la de stats cuando van juntas en un README.
+    const bgOptions = {
+      ...backgroundOptions(req),
+      includeStreaks: req.query.includeStreaks === 'true'
+    };
 
     let svg;
     switch(theme) {

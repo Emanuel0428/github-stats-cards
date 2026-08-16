@@ -260,21 +260,19 @@ export async function getTopLanguages(username, options = {}) {
 
     const languages = {};
 
-    // Obtener bytes de código por lenguaje
-    for (const repo of repos) {
-      if ((includeForks || !repo.fork) && repo.language) {
-        try {
-          const langStats = await github.get(`/repos/${repo.owner.login}/${repo.name}/languages`);
-          
-          for (const [lang, bytes] of Object.entries(langStats.data)) {
-            languages[lang] = (languages[lang] || 0) + bytes;
-          }
-        } catch (error) {
-          // Si falla, al menos contar el lenguaje principal
-          if (repo.language) {
-            languages[repo.language] = (languages[repo.language] || 0) + 1;
-          }
-        }
+    // Obtener bytes de código por lenguaje. En paralelo: en secuencia la
+    // respuesta tardaba ~5s y el proxy de imágenes de GitHub (camo) la corta.
+    const wanted = repos.filter((repo) => (includeForks || !repo.fork) && repo.language);
+    const results = await Promise.all(wanted.map((repo) =>
+      github.get(`/repos/${repo.owner.login}/${repo.name}/languages`)
+        .then((res) => res.data)
+        // Si falla, al menos contar el lenguaje principal
+        .catch(() => ({ [repo.language]: 1 }))
+    ));
+
+    for (const langStats of results) {
+      for (const [lang, bytes] of Object.entries(langStats)) {
+        languages[lang] = (languages[lang] || 0) + bytes;
       }
     }
 

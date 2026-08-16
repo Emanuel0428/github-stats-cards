@@ -233,6 +233,31 @@ async function main() {
     ok(name);
   }
 
+  console.log('\nLa tarjeta de lenguajes mide igual que la de stats');
+  const svgHeight = (svg) => Number(svg.match(/<svg width="\d+" height="(\d+)"/)[1]);
+  const MANY_LANGS = Array.from({ length: 15 }, (_, i) => ({ language: `L${i}`, count: 15 - i }));
+  const { streaks, ...NO_STREAKS } = FAKE_STATS;
+
+  for (const [theme, stats, langs] of [
+    ['cyberpunk', getStatsCard, getTopLanguagesCard],
+    ['brutalist', getStatsBrutalistCard, getTopLanguagesBrutalistCard],
+    ['terminal', getStatsTerminalCard, getTopLanguagesTerminalCard],
+    ['luxury', getStatsLuxuryCard, getTopLanguagesLuxuryCard],
+    ['vaporwave', getStatsVaporwaveCard, getTopLanguagesVaporwaveCard]
+  ]) {
+    for (const on of [false, true]) {
+      const statsH = svgHeight(await stats('u', on ? FAKE_STATS : NO_STREAKS, {}));
+      for (const data of [FAKE_LANGS, MANY_LANGS.slice(0, 8), MANY_LANGS]) {
+        const langH = svgHeight(await langs('u', data, { includeStreaks: on }));
+        assert.equal(
+          langH, statsH,
+          `${theme} (streaks=${on}, ${data.length} lenguajes): ${langH}px vs ${statsH}px`
+        );
+      }
+    }
+    ok(`${theme}: mismo alto con y sin streaks, de 3 a 15 lenguajes`);
+  }
+
   console.log(`\n${checks} comprobaciones OK\n`);
 }
 
