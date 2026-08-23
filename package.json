@@ -10,7 +10,8 @@
         "check-token": "node scripts/check-token.js",
         "check-background": "node scripts/check-background.js",
         "check-page": "node scripts/check-page.js",
-        "check": "npm run check-background && npm run check-page"
+        "check-langs": "node scripts/check-langs.js",
+        "check": "npm run check-background && npm run check-page && npm run check-langs"
     },
     "dependencies": {
         "axios": "^1.10.0",

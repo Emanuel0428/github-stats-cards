@@ -17,3 +17,16 @@ export function langLayout(wanted, yOffset, includeStreaks) {
   const step = Math.max(MIN_STEP, Math.min(MAX_STEP, room / rows));
   return { height, step, rows };
 }
+
+// El porcentaje es la parte del total de bytes (antes se calculaba contra el
+// lenguaje top, por eso el primero siempre salía 100%). La barra sí es
+// relativa al mayor: así la primera llena el ancho y las demás se comparan.
+export function langShares(languages, rows, barMax = 240) {
+  const total = languages.reduce((sum, l) => sum + l.count, 0) || 1;
+  const top = languages[0]?.count || 1;
+  return languages.slice(0, rows).map((l) => ({
+    ...l,
+    percentage: (l.count / total) * 100,
+    barWidth: (l.count / top) * barMax,
+  }));
+}

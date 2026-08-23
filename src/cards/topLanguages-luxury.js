@@ -1,6 +1,6 @@
 import { getTopLanguages } from '../utils/github.js';
 import { background } from './background.js';
-import { langLayout } from './layout.js';
+import { langLayout, langShares } from './layout.js';
 
 const languageColors = {
   JavaScript: '#f7df1e',
@@ -26,7 +26,7 @@ export async function getTopLanguagesLuxuryCard(username, preloadedLanguages = n
   const width = 520;
   const yOffset = 105;
   const { height, step, rows } = langLayout(Math.min(languages.length, 6), yOffset, options.includeStreaks);
-  const limitedLanguages = languages.slice(0, rows);
+  const limitedLanguages = langShares(languages, rows);
 
   const bgx = await background('luxury', {
     ...options, width, height
@@ -35,8 +35,7 @@ export async function getTopLanguagesLuxuryCard(username, preloadedLanguages = n
   let barsHTML = '';
 
   limitedLanguages.forEach((lang, index) => {
-    const percentage = (lang.count / limitedLanguages[0].count) * 100;
-    const barWidth = (percentage / 100) * 240;
+    const { percentage, barWidth } = lang;
     const color = languageColors[lang.language] || '#d4af37';
     const y = yOffset + index * step;
 

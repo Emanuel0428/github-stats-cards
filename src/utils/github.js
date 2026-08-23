@@ -258,10 +258,8 @@ export async function getTopLanguages(username, options = {}) {
     const github = getGithubClient();
     const repos = await fetchAllRepos(github, username, includePrivate);
 
-    const languages = {};
-
-    // Obtener bytes de código por lenguaje. En paralelo: en secuencia la
-    // respuesta tardaba ~5s y el proxy de imágenes de GitHub (camo) la corta.
+    // Bytes por lenguaje de cada repo. En paralelo: en secuencia la respuesta
+    // tardaba ~5s y el proxy de imágenes de GitHub (camo) la corta.
     const wanted = repos.filter((repo) => (includeForks || !repo.fork) && repo.language);
     const results = await Promise.all(wanted.map((repo) =>
       github.get(`/repos/${repo.owner.login}/${repo.name}/languages`)
@@ -270,17 +268,29 @@ export async function getTopLanguages(username, options = {}) {
         .catch(() => ({ [repo.language]: 1 }))
     ));
 
-    for (const langStats of results) {
-      for (const [lang, bytes] of Object.entries(langStats)) {
-        languages[lang] = (languages[lang] || 0) + bytes;
-      }
-    }
-
-    return Object.entries(languages)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, limit)
-      .map(([lang, count]) => ({ language: lang, count }));
+    return tallyLanguages(results, limit);
   } catch (error) {
     throw new Error(`Failed to fetch top languages: ${error.message}`);
   }
+}
+
+// count = en cuántos repos se usa el lenguaje, no bytes: 30k líneas de un solo
+// proyecto no dicen tanto como usarlo en 10 repos. Se ignora lo residual (el
+// CSS suelto de un repo de Python) con un mínimo de peso dentro del repo.
+const MIN_SHARE = 0.05;
+
+export function tallyLanguages(repoLangStats, limit = 8) {
+  const languages = {};
+  for (const langStats of repoLangStats) {
+    const repoBytes = Object.values(langStats).reduce((a, b) => a + b, 0) || 1;
+    for (const [lang, bytes] of Object.entries(langStats)) {
+      if (bytes / repoBytes < MIN_SHARE) continue;
+      languages[lang] = (languages[lang] || 0) + 1;
+    }
+  }
+
+  return Object.entries(languages)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([lang, count]) => ({ language: lang, count }));
 }
